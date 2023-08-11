@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "593748788854",
+    "project_id": "appinstaclone-1",
+    "storage_bucket": "appinstaclone-1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:593748788854:android:7b1cd3627e1f4c62c58157",
+        "android_client_info": {
+          "package_name": "com.cursokotlin.appinstaclone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "593748788854-bh6hpbpe0m9jt4vlg1uii3nbtc7ne56q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvO4pL8Uz5pzRO5kr7nPLRuq-hS0wi-5M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "593748788854-bh6hpbpe0m9jt4vlg1uii3nbtc7ne56q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
