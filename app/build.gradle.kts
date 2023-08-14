@@ -10,6 +10,7 @@ android {
     namespace = "com.cursokotlin.appinstaclone"
     compileSdk = 34
 
+
     defaultConfig {
         applicationId = "com.cursokotlin.appinstaclone"
         minSdk = 30
@@ -62,6 +63,8 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation ("androidx.compose.material:material-icons-extended:1.4.3")
+    implementation ("androidx.compose.material:material:1.4.3")
 
     //Hilt
     implementation("com.google.dagger:hilt-android:2.47")
@@ -80,6 +83,8 @@ dependencies {
     implementation ("com.google.firebase:firebase-firestore-ktx:24.7.0")
     implementation ("com.google.firebase:firebase-storage-ktx")
     implementation ("com.google.firebase:firebase-storage-ktx:20.2.1")
+
+
 
     implementation ("io.coil-kt:coil-compose:1.3.2")
 
