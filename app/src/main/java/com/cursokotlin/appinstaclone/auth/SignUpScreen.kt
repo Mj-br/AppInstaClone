@@ -1,6 +1,7 @@
 package com.cursokotlin.appinstaclone.auth
 
 import android.app.Activity
+import android.os.Bundle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,7 +15,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
@@ -46,7 +50,13 @@ import com.cursokotlin.appinstaclone.R
 import androidx.compose.material.icons.*
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.sp
 
 @Composable
@@ -55,10 +65,14 @@ fun SingUpScreen(navController: NavController, vm: IgViewModel) {
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
+            .verticalScroll(
+                rememberScrollState()
+            )
     ) {
         Header(Modifier.align(Alignment.TopEnd))
         Body(Modifier.align(Alignment.Center), vm)
-        Footer(modifier = Modifier.align(Alignment.BottomCenter))
+        Footer(Modifier.align(Alignment.BottomCenter))
+
     }
 
 
@@ -67,24 +81,49 @@ fun SingUpScreen(navController: NavController, vm: IgViewModel) {
 @Composable
 fun Body(modifier: Modifier, vm: IgViewModel) {
     //Variables to save states with LiveData or Flow
-    val email: String = "email"
-    val password: String = "password"
+    val usernameState = remember{ mutableStateOf(TextFieldValue()) }
+    val emailState = remember { mutableStateOf(TextFieldValue()) }
+    val passState = remember { mutableStateOf(TextFieldValue()) }
 
     //Design of the body login screen
     Column(modifier = modifier) {
         ImageLogo(Modifier.align(Alignment.CenterHorizontally))
         Spacer(modifier = Modifier.size(16.dp))
-        Email(email = email, onTextChanged = {
+        Username(username = usernameState, onTextChanged = {
             TODO("ViewModel.onLoginChanged(it,password)")
         })
         Spacer(modifier = Modifier.size(4.dp))
-        Password(password) {
+        Email(email = emailState, onTextChanged = {
+            TODO("ViewModel.onLoginChanged(it,password)")
+        })
+        Spacer(modifier = Modifier.size(4.dp))
+        Password(passState) {
             TODO("ViewModel.onLoginChanged(email,it)")
         }
         Spacer(modifier = Modifier.size(8.dp))
         ForgotPassword(Modifier.align(Alignment.End))
         Spacer(modifier = Modifier.size(16.dp))
-        LoginButton(/*isLoginEnable, loginViewModel: LoginViewModel)*/)
+        Button(
+            onClick = {
+                vm.onSignUp(
+                    usernameState.value.text,
+                    emailState.value.text,
+                    passState.value.text
+                )
+            },
+            /*loginEnable: Boolean, loginViewModel: LoginViewModel)*/
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = Color(0xFF4EA8E9),
+                disabledBackgroundColor = Color(0xFF78C8F9),
+                contentColor = Color.White,
+                disabledContentColor = Color.White
+
+            )
+        ) {
+            Text(text = "Log In")
+
+        }
         Spacer(modifier = Modifier.size(16.dp))
         LoginDivider()
         Spacer(modifier = Modifier.size(32.dp))
@@ -185,26 +224,6 @@ fun LoginDivider() {
 }
 
 @Composable
-fun LoginButton(/*loginEnable: Boolean, loginViewModel: LoginViewModel)*/) {
-    Button(
-        onClick = { TODO("loginViewModel.onLoginSelected()") },
-        /*loginEnable: Boolean, loginViewModel: LoginViewModel)*/
-        modifier = Modifier.fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(
-            backgroundColor = Color(0xFF4EA8E9),
-            disabledBackgroundColor = Color(0xFF78C8F9),
-            contentColor = Color.White,
-            disabledContentColor = Color.White
-
-        )
-    ) {
-        Text(text = "Log In")
-
-    }
-
-}
-
-@Composable
 fun ForgotPassword(modifier: Modifier) {
     Text(
         text = "Forgot password?",
@@ -217,7 +236,7 @@ fun ForgotPassword(modifier: Modifier) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Password(password: String, onTextChanged: (String) -> Unit) {
+fun Password(password: MutableState<TextFieldValue>, onTextChanged: (String) -> Unit) {
     //Variables for states of Icons
     var passwordVisibility by rememberSaveable {
         mutableStateOf(false)
@@ -225,10 +244,10 @@ fun Password(password: String, onTextChanged: (String) -> Unit) {
     }
 
     TextField(
-        value = password,
-        onValueChange = { onTextChanged(it) },
+        value = password.value,
+        onValueChange = { password.value = it },
         modifier = Modifier.fillMaxWidth(),
-        placeholder = { Text(text = "Password") },
+        label = { Text(text = "Password") },
         maxLines = 1,
         singleLine = true,
         colors = TextFieldDefaults.textFieldColors(
@@ -266,15 +285,36 @@ fun Password(password: String, onTextChanged: (String) -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Email(email: String, onTextChanged: (String) -> Unit) {
+fun Email(email: MutableState<TextFieldValue>, onTextChanged: (String) -> Unit) {
     TextField(
-        value = email,
-        onValueChange = { onTextChanged(it) },
+        value = email.value,
+        onValueChange = { email.value = it },
         modifier = Modifier.fillMaxWidth(),
-        placeholder = { Text(text = "Email") },
+        label = { Text(text = "Email") },
         maxLines = 1,
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+        colors = TextFieldDefaults.textFieldColors(
+            textColor = Color(0xFFB2B2B2),
+            containerColor = Color(0xFFFAFAFA),
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
+        )
+    )
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Username(username: MutableState<TextFieldValue>, onTextChanged: (String) -> Unit) {
+    TextField(
+        value = username.value,
+        onValueChange = { username.value = it },
+        modifier = Modifier.fillMaxWidth(),
+        label = { Text(text = "Username") },
+        maxLines = 1,
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
         colors = TextFieldDefaults.textFieldColors(
             textColor = Color(0xFFB2B2B2),
             containerColor = Color(0xFFFAFAFA),
