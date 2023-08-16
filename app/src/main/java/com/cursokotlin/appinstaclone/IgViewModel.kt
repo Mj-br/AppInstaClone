@@ -66,6 +66,37 @@ class IgViewModel @Inject constructor(
             following = userData.value?.following
         )
 
+        uid?.let { uid ->
+            inProgress.value = true
+            db.collection(USERS).document(uid).get()
+                .addOnSuccessListener {
+                if (it.exists()) {
+                    it.reference.update(userData.toMap())
+                        .addOnSuccessListener {
+                            this.userData.value = userData
+                            inProgress.value = false
+                        }
+                        .addOnFailureListener {
+                            handleExeption(it, "Cannot update user")
+                            inProgress.value = false
+                        }
+                } else {
+                    db.collection(USERS).document(uid).set(userData)
+                    getUserData(uid)
+                    inProgress.value = false
+                }
+            }
+                .addOnFailureListener{ exception ->
+                    handleExeption(exception, "Cannot create user")
+                    inProgress.value = false
+
+                }
+        }
+
+    }
+
+    private fun getUserData(uid: String) {
+        TODO("Not yet implemented")
     }
 
     /**
