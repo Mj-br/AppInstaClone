@@ -58,6 +58,7 @@ import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.sp
+import com.cursokotlin.appinstaclone.core.composables.CommonProgressSpinner
 
 @Composable
 fun SingUpScreen(navController: NavController, vm: IgViewModel) {
@@ -69,10 +70,18 @@ fun SingUpScreen(navController: NavController, vm: IgViewModel) {
                 rememberScrollState()
             )
     ) {
+
         Header(Modifier.align(Alignment.TopEnd))
         Body(Modifier.align(Alignment.Center), vm)
         Footer(Modifier.align(Alignment.BottomCenter))
 
+
+    }
+
+    //Displays a progress spinner if a loading operation is in progress.
+    val isLoading = vm.inProgress.value
+    if (isLoading) {
+        CommonProgressSpinner()
     }
 
 
@@ -81,9 +90,10 @@ fun SingUpScreen(navController: NavController, vm: IgViewModel) {
 @Composable
 fun Body(modifier: Modifier, vm: IgViewModel) {
     //Variables to save states with LiveData or Flow
-    val usernameState = remember{ mutableStateOf(TextFieldValue()) }
+    val usernameState = remember { mutableStateOf(TextFieldValue()) }
     val emailState = remember { mutableStateOf(TextFieldValue()) }
     val passState = remember { mutableStateOf(TextFieldValue()) }
+
 
     //Design of the body login screen
     Column(modifier = modifier) {
@@ -129,7 +139,9 @@ fun Body(modifier: Modifier, vm: IgViewModel) {
         Spacer(modifier = Modifier.size(32.dp))
         SocialLogin()
 
+
     }
+
 
 }
 
