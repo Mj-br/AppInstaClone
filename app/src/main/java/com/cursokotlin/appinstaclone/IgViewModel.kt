@@ -6,6 +6,7 @@ import com.cursokotlin.appinstaclone.data.Event
 import com.cursokotlin.appinstaclone.data.UserData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.lang.Exception
@@ -31,7 +32,26 @@ class IgViewModel @Inject constructor(
      * @param email The email address for the new user.
      * @param pass The password for the new user.
      */
+
+    init {
+        // Get the current user's authentication status
+        val currentUser = auth.currentUser
+
+        // Check if a user is currently signed in and update the signedIn value accordingly
+        signedIn.value = currentUser != null
+
+        // If a user is signed in, retrieve their UID and fetch user data
+        currentUser?.uid?.let { uid ->
+            getUserData(uid)
+        }
+    }
     fun onSignUp(username: String, email: String, pass: String) {
+        // Ensure that the required fields are not empty
+        if (username.isBlank() || email.isBlank() || pass.isBlank()) {
+            handleException(customMessage = "Please fill in all the required fields")
+            return
+        }
+
         // Indicate that an operation is in progress
         inProgress.value = true
 
@@ -58,7 +78,10 @@ class IgViewModel @Inject constructor(
                         }
                 }
             }
-            .addOnFailureListener { /* Handle any potential errors */ }
+            .addOnFailureListener { exc ->
+                // Handle any potential errors during the database query
+                handleException(exc, "Login failed, please verify your data")
+            }
     }
 
     /**
@@ -122,8 +145,37 @@ class IgViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Retrieves user data from the database based on the provided UID and updates the view model.
+     *
+     * @param uid The unique identifier of the user whose data is to be retrieved.
+     */
     private fun getUserData(uid: String) {
-        TODO("Not yet implemented")
+        /* Indicate that an operation is in progress */
+        inProgress.value = true
+
+        /* Retrieve the user data document from the database */
+        db.collection(USERS).document(uid).get()
+            .addOnSuccessListener {
+                /* Convert the retrieved document to a UserData object */
+                val user = it.toObject<UserData>()
+
+                /* Update the userData value with the retrieved user data */
+                userData.value = user
+
+                /* Indicate that the operation is complete */
+                inProgress.value = false
+
+                /* Show a notification to indicate that user data was successfully retrieved */
+//                popupNotification.value = Event("User data retrieved successfully")
+            }
+            .addOnFailureListener { exc ->
+                /* Handle failure to retrieve user data */
+                handleException(exc, "Cannot retrieve userdata")
+
+                /* Indicate that the operation is complete */
+                inProgress.value = false
+            }
     }
 
     /**
