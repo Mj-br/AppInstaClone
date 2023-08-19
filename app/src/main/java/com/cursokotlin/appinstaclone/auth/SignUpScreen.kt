@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -86,6 +87,9 @@ fun SingUpScreen(navController: NavController, vm: IgViewModel) {
 
 @Composable
 fun Body(modifier: Modifier, vm: IgViewModel) {
+
+    val focus = LocalFocusManager.current
+
     //Variables to save states with LiveData or Flow
     val usernameState = remember { mutableStateOf(TextFieldValue()) }
     val emailState = remember { mutableStateOf(TextFieldValue()) }
@@ -116,6 +120,7 @@ fun Body(modifier: Modifier, vm: IgViewModel) {
         Spacer(modifier = Modifier.size(24.dp))
         Button(
             onClick = {
+                focus.clearFocus(force = true)
                 vm.onSignUp(
                     usernameState.value.text,
                     emailState.value.text,
@@ -135,11 +140,7 @@ fun Body(modifier: Modifier, vm: IgViewModel) {
             Text(text = "Sign In")
 
         }
-        Spacer(modifier = Modifier.size(16.dp))
-        SignUpDivider()
-        Spacer(modifier = Modifier.size(32.dp))
-        SocialLogin()
-
+        Spacer(modifier = Modifier.size(64.dp))
 
     }
 

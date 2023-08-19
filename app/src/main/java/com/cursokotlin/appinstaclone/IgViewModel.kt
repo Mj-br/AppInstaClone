@@ -25,13 +25,7 @@ class IgViewModel @Inject constructor(
     val inProgress = mutableStateOf(false)
     val userData = mutableStateOf<UserData?>(null)
     val popupNotification = mutableStateOf<Event<String>?>(null)
-    /**
-     * Handles the sign-up process for a new user.
-     *
-     * @param username The desired username for the new user.
-     * @param email The email address for the new user.
-     * @param pass The password for the new user.
-     */
+
 
     init {
         // Get the current user's authentication status
@@ -45,6 +39,45 @@ class IgViewModel @Inject constructor(
             getUserData(uid)
         }
     }
+
+    fun onLogin(email: String, pass: String) {
+        // Ensure that the required fields are not empty
+        if (email.isBlank() || pass.isBlank()) {
+            handleException(customMessage = "Please fill in all the required fields")
+            return
+        }
+
+        inProgress.value = true
+
+        auth.signInWithEmailAndPassword(email, pass)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    signedIn.value = true
+                    inProgress.value = false
+                    auth.currentUser?.uid?.let { uid ->
+                        getUserData(uid)
+                    }
+                } else {
+                    handleException(task.exception, "Login failed")
+                    inProgress.value = false
+                }
+            }
+            .addOnFailureListener { exc ->
+                handleException(exc, "Login failed")
+                inProgress.value = false
+
+            }
+
+
+    }
+
+    /**
+     * Handles the sign-up process for a new user.
+     *
+     * @param username The desired username for the new user.
+     * @param email The email address for the new user.
+     * @param pass The password for the new user.
+     */
     fun onSignUp(username: String, email: String, pass: String) {
         // Ensure that the required fields are not empty
         if (username.isBlank() || email.isBlank() || pass.isBlank()) {

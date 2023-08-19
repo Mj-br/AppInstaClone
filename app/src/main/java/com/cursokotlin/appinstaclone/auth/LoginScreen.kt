@@ -24,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -37,6 +38,7 @@ import com.cursokotlin.appinstaclone.core.composables.navigateTo
 
 @Composable
 fun LoginScreen(navController: NavController, vm: IgViewModel) {
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -65,6 +67,9 @@ fun LoginScreen(navController: NavController, vm: IgViewModel) {
 
 @Composable
 fun BodyLogin(modifier: Modifier, vm: IgViewModel) {
+
+    val focus = LocalFocusManager.current
+
     //Variables to save states with LiveData or Flow
     val emailState = remember { mutableStateOf(TextFieldValue()) }
     val passState = remember { mutableStateOf(TextFieldValue()) }
@@ -73,7 +78,7 @@ fun BodyLogin(modifier: Modifier, vm: IgViewModel) {
     //Design of the body login screen
     Column(modifier = modifier) {
         ImageLogo(Modifier.align(Alignment.CenterHorizontally))
-        Spacer(modifier = Modifier.size(50.dp))
+        Spacer(modifier = Modifier.size(100.dp))
         Text(
             text = "Log In",
             modifier = Modifier.padding(8.dp),
@@ -91,7 +96,8 @@ fun BodyLogin(modifier: Modifier, vm: IgViewModel) {
         Spacer(modifier = Modifier.size(32.dp))
         Button(
             onClick = {
-
+                focus.clearFocus(force = true)
+                vm.onLogin(emailState.value.text, passState.value.text)
             },
             /*loginEnable: Boolean, loginViewModel: LoginViewModel)*/
             modifier = Modifier.fillMaxWidth(),
@@ -133,7 +139,7 @@ fun FooterLogin(modifier: Modifier, navController: NavController) {
 fun GoToSignUp(navController: NavController) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
         Text(
-            text = "Already have an account? Go to ->",
+            text = "Don't have an account? Go to ->",
             fontSize = 12.sp,
             color = Color(0xFFB5B5B5)
         )
