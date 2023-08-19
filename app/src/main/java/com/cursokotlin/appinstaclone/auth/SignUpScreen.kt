@@ -1,7 +1,6 @@
 package com.cursokotlin.appinstaclone.auth
 
 import android.app.Activity
-import android.os.Bundle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,15 +14,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
-import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.*
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,8 +31,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,25 +42,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.cursokotlin.appinstaclone.DestinationScreen
 import com.cursokotlin.appinstaclone.IgViewModel
 import com.cursokotlin.appinstaclone.R
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.SaverScope
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.sp
 import com.cursokotlin.appinstaclone.core.composables.CommonProgressSpinner
+import com.cursokotlin.appinstaclone.core.composables.navigateTo
 
 @Composable
 fun SingUpScreen(navController: NavController, vm: IgViewModel) {
@@ -73,7 +70,7 @@ fun SingUpScreen(navController: NavController, vm: IgViewModel) {
 
         Header(Modifier.align(Alignment.TopEnd))
         Body(Modifier.align(Alignment.Center), vm)
-        Footer(Modifier.align(Alignment.BottomCenter))
+        Footer(Modifier.align(Alignment.BottomCenter), navController)
 
 
     }
@@ -98,7 +95,13 @@ fun Body(modifier: Modifier, vm: IgViewModel) {
     //Design of the body login screen
     Column(modifier = modifier) {
         ImageLogo(Modifier.align(Alignment.CenterHorizontally))
-        Spacer(modifier = Modifier.size(16.dp))
+        Spacer(modifier = Modifier.size(50.dp))
+        Text(text = "Sign Up",
+            modifier = Modifier.padding(8.dp),
+            fontSize = 30.sp,
+            fontFamily = FontFamily.Serif,
+        )
+        Spacer(modifier = Modifier.size(8.dp))
         Username(username = usernameState, onTextChanged = {
             TODO("ViewModel.onLoginChanged(it,password)")
         })
@@ -110,9 +113,7 @@ fun Body(modifier: Modifier, vm: IgViewModel) {
         Password(passState) {
             TODO("ViewModel.onLoginChanged(email,it)")
         }
-        Spacer(modifier = Modifier.size(8.dp))
-        ForgotPassword(Modifier.align(Alignment.End))
-        Spacer(modifier = Modifier.size(16.dp))
+        Spacer(modifier = Modifier.size(24.dp))
         Button(
             onClick = {
                 vm.onSignUp(
@@ -131,11 +132,11 @@ fun Body(modifier: Modifier, vm: IgViewModel) {
 
             )
         ) {
-            Text(text = "Log In")
+            Text(text = "Sign In")
 
         }
         Spacer(modifier = Modifier.size(16.dp))
-        LoginDivider()
+        SignUpDivider()
         Spacer(modifier = Modifier.size(32.dp))
         SocialLogin()
 
@@ -146,7 +147,7 @@ fun Body(modifier: Modifier, vm: IgViewModel) {
 }
 
 @Composable
-fun Footer(modifier: Modifier) {
+fun Footer(modifier: Modifier, navController: NavController) {
     Column(modifier = modifier.fillMaxWidth()) {
         Divider(
             modifier = Modifier
@@ -155,7 +156,7 @@ fun Footer(modifier: Modifier) {
                 .fillMaxWidth()
         )
         Spacer(modifier = Modifier.size(24.dp))
-        SignUp()
+        GoToLogin(navController = navController)
         Spacer(modifier = Modifier.size(24.dp))
 
     }
@@ -164,16 +165,20 @@ fun Footer(modifier: Modifier) {
 
 //Create new Account
 @Composable
-fun SignUp() {
+fun GoToLogin(navController: NavController) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
         Text(
-            text = "Dont have an account?",
+            text = "Already have an account? Go to ->",
             fontSize = 12.sp,
             color = Color(0xFFB5B5B5)
         )
         Text(
-            text = "Sign up",
-            Modifier.padding(horizontal = 8.dp),
+            text = "Login",
+            Modifier
+                .padding(horizontal = 8.dp)
+                .clickable {
+                    navigateTo(navController, DestinationScreen.Login)
+                },
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF4EA8E9)
@@ -208,7 +213,7 @@ fun SocialLogin() {
 }
 
 @Composable
-fun LoginDivider() {
+fun SignUpDivider() {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Divider(
             modifier = Modifier
@@ -350,8 +355,11 @@ fun ImageLogo(modifier: Modifier) {
 @Composable
 fun Header(modifier: Modifier) {
     val activity = LocalContext.current as Activity
+
     Icon(
         imageVector = Icons.Default.Close,
         contentDescription = "close app",
-        modifier = modifier.clickable { activity.finish() })
+        modifier = modifier.clickable { activity.finish() }
+    )
+
 }

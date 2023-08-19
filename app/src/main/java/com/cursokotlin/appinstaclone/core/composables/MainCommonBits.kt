@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavController
+import com.cursokotlin.appinstaclone.DestinationScreen
 import com.cursokotlin.appinstaclone.IgViewModel
 
 /**
@@ -45,5 +47,23 @@ fun CommonProgressSpinner(){
         verticalAlignment = Alignment.CenterVertically
     ){
         CircularProgressIndicator()
+    }
+}
+
+/**
+ * Navigates to a specified destination screen using a NavController.
+ *
+ * @param navController The NavController responsible for navigation.
+ * @param dest The destination screen to navigate to.
+ */
+fun navigateTo(navController: NavController, dest: DestinationScreen) {
+    navController.navigate(dest.route) {
+        /* Specify navigation behavior */
+
+        // Pop up to the destination screen to remove intermediate destinations from the back stack
+        popUpTo(dest.route)
+
+        // Launch the destination screen as a single top-level destination
+        launchSingleTop = true
     }
 }
