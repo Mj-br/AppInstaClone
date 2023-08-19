@@ -28,6 +28,7 @@ class IgViewModel @Inject constructor(
 
 
     init {
+//        auth.signOut()
         // Get the current user's authentication status
         val currentUser = auth.currentUser
 

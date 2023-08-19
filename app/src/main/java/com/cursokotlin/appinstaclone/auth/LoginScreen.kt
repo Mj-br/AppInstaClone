@@ -33,11 +33,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.cursokotlin.appinstaclone.DestinationScreen
 import com.cursokotlin.appinstaclone.IgViewModel
-import com.cursokotlin.appinstaclone.core.composables.CommonProgressSpinner
-import com.cursokotlin.appinstaclone.core.composables.navigateTo
+import com.cursokotlin.appinstaclone.main.composables.CheckSignedIn
+import com.cursokotlin.appinstaclone.main.composables.CommonProgressSpinner
+import com.cursokotlin.appinstaclone.main.composables.navigateTo
 
 @Composable
 fun LoginScreen(navController: NavController, vm: IgViewModel) {
+
+    CheckSignedIn(vm = vm, navController = navController)
 
     Box(
         modifier = Modifier

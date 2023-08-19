@@ -1,4 +1,4 @@
-package com.cursokotlin.appinstaclone.core.di
+package com.cursokotlin.appinstaclone.main.di
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
