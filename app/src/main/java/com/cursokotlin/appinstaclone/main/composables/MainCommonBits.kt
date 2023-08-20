@@ -70,13 +70,27 @@ fun navigateTo(navController: NavController, dest: DestinationScreen) {
     }
 }
 
+/**
+ * Checks if a user is signed in and, if so, navigates to the Feed screen.
+ *
+ * @param vm The view model containing signed-in state information.
+ * @param navController The NavController responsible for navigation.
+ */
 @Composable
-fun CheckSignedIn(vm: IgViewModel, navController: NavController){
+fun CheckSignedIn(vm: IgViewModel, navController: NavController) {
+    // Create a state variable to track if the navigation has already occurred
     val alreadyLoggedIn = remember { mutableStateOf(false) }
+
+    // Get the signed-in state from the view model
     val signedIn = vm.signedIn.value
+
+    // Check if the user is signed in and the navigation hasn't already occurred
     if (signedIn && !alreadyLoggedIn.value) {
+        // Mark that the navigation has occurred
         alreadyLoggedIn.value = true
-        navController.navigate(DestinationScreen.Feed.route){
+
+        // Navigate to the Feed screen and clear the back stack
+        navController.navigate(DestinationScreen.Feed.route) {
             popUpTo(0)
         }
     }
