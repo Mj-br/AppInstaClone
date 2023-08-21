@@ -1,11 +1,19 @@
 package com.cursokotlin.appinstaclone.main.composables
 
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -14,10 +22,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.ImagePainter
+import coil.compose.rememberImagePainter
 import com.cursokotlin.appinstaclone.DestinationScreen
 import com.cursokotlin.appinstaclone.IgViewModel
+import com.cursokotlin.appinstaclone.R
 
 /**
  * This composable function displays a notification message as a Toast in the user interface.
@@ -38,16 +54,18 @@ fun NotificationMessage(vm: IgViewModel) {
 }
 
 @Composable
-fun CommonProgressSpinner(){
-    Row (
-        modifier = Modifier
+fun CommonProgressSpinner(
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
             .alpha(0.5f)
-            .background((Color.LightGray))
+            .background(Color.LightGray)
             .clickable(enabled = false) { }
             .fillMaxSize(),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
-    ){
+    ) {
         CircularProgressIndicator()
     }
 }
@@ -92,6 +110,54 @@ fun CheckSignedIn(vm: IgViewModel, navController: NavController) {
         // Navigate to the Feed screen and clear the back stack
         navController.navigate(DestinationScreen.Feed.route) {
             popUpTo(0)
+        }
+    }
+
+}
+
+
+@Composable
+fun CommonImage(
+    data: String?,
+    modifier: Modifier = Modifier.wrapContentSize(),
+    contentScale: ContentScale = ContentScale.Crop
+) {
+    val painter = rememberImagePainter(data = data)
+    Box(modifier = modifier) {
+        Image(
+            painter = painter,
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = contentScale
+        )
+        if (painter.state is ImagePainter.State.Loading) {
+            CommonProgressSpinner(
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+    }
+}
+
+@Composable
+fun UserImageCard(
+    userImage: String?,
+    modifier: Modifier = Modifier
+        .padding(8.dp)
+        .size(64.dp)
+) {
+    Card(shape = CircleShape, modifier = modifier) {
+        if (userImage.isNullOrEmpty()) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_user),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(Color.Gray),
+                modifier = Modifier
+                    .fillMaxSize() // Make the Image occupy the entire Card
+                    .padding(4.dp), // Optional padding to adjust the image position
+                alignment = Alignment.Center // Center the image within the Card
+            )
+        } else {
+            CommonImage(data = userImage)
         }
     }
 }
