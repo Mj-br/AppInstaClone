@@ -29,6 +29,7 @@ import com.cursokotlin.appinstaclone.IgViewModel
 import com.cursokotlin.appinstaclone.R
 import com.cursokotlin.appinstaclone.main.composables.BottomNavigationItem
 import com.cursokotlin.appinstaclone.main.composables.BottomNavigationMenu
+import com.cursokotlin.appinstaclone.main.composables.CommonProgressSpinner
 import com.cursokotlin.appinstaclone.main.composables.UserImageCard
 
 @Composable
@@ -108,6 +109,10 @@ fun MyPostsScreen(navController: NavController, vm: IgViewModel) {
             navController = navController
         )
 
+    }
+
+    if(isLoading){
+        CommonProgressSpinner()
     }
 }
 
