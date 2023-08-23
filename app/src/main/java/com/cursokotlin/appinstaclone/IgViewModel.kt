@@ -233,4 +233,8 @@ class IgViewModel @Inject constructor(
 
     }
 
+    fun updateProfileData (name: String, username: String, bio: String){
+        createOrUpdateProfile(name, username, bio)
+    }
+
 }
