@@ -25,12 +25,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.cursokotlin.appinstaclone.DestinationScreen
 import com.cursokotlin.appinstaclone.IgViewModel
 import com.cursokotlin.appinstaclone.R
 import com.cursokotlin.appinstaclone.main.composables.BottomNavigationItem
 import com.cursokotlin.appinstaclone.main.composables.BottomNavigationMenu
 import com.cursokotlin.appinstaclone.main.composables.CommonProgressSpinner
 import com.cursokotlin.appinstaclone.main.composables.UserImageCard
+import com.cursokotlin.appinstaclone.main.composables.navigateTo
 
 @Composable
 fun MyPostsScreen(navController: NavController, vm: IgViewModel) {
@@ -79,7 +81,7 @@ fun MyPostsScreen(navController: NavController, vm: IgViewModel) {
 
             }
             OutlinedButton(
-                onClick = { },
+                onClick = { navigateTo(navController, DestinationScreen.Profile) },
                 modifier = Modifier
                     .padding(8.dp)
                     .fillMaxWidth(),
