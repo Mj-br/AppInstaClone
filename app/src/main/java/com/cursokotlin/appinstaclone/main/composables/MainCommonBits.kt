@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
@@ -29,7 +28,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import coil.annotation.ExperimentalCoilApi
 import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
 import com.cursokotlin.appinstaclone.DestinationScreen
@@ -117,20 +115,36 @@ fun CheckSignedIn(vm: IgViewModel, navController: NavController) {
 }
 
 
+/**
+ * Displays an image with optional loading spinner.
+ *
+ * This composable displays an image fetched from the provided [data] URL or resource,
+ * and it supports showing a loading spinner while the image is loading.
+ *
+ * @param data The URL or resource path of the image to display.
+ * @param modifier The modifier to apply to this composable.
+ * @param contentScale The content scale for the displayed image.
+ */
 @Composable
 fun CommonImage(
     data: String?,
     modifier: Modifier = Modifier.wrapContentSize(),
     contentScale: ContentScale = ContentScale.Crop
 ) {
+    // Create a painter to load and display the image.
     val painter = rememberImagePainter(data = data)
+
+    // Create a Box composable to overlay the image with a spinner when loading.
     Box(modifier = modifier) {
+        // Display the image with optional content scale.
         Image(
             painter = painter,
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = contentScale
         )
+
+        // Show a spinner in the center if the image is still loading.
         if (painter.state is ImagePainter.State.Loading) {
             CommonProgressSpinner(
                 modifier = Modifier.align(Alignment.Center)
@@ -139,6 +153,15 @@ fun CommonImage(
     }
 }
 
+/**
+ * Displays a user image card.
+ *
+ * This composable displays a circular card that contains a user image.
+ * If [userImage] is null or empty, it displays a default user image icon.
+ *
+ * @param userImage The URL or resource path of the user's image.
+ * @param modifier The modifier to apply to this composable.
+ */
 @Composable
 fun UserImageCard(
     userImage: String?,
@@ -146,8 +169,10 @@ fun UserImageCard(
         .padding(8.dp)
         .size(64.dp)
 ) {
+    // Create a circular card with the provided modifier.
     Card(shape = CircleShape, modifier = modifier) {
         if (userImage.isNullOrEmpty()) {
+            // Display a default user image icon if [userImage] is null or empty.
             Image(
                 painter = painterResource(id = R.drawable.ic_user),
                 contentDescription = null,
@@ -158,11 +183,19 @@ fun UserImageCard(
                 alignment = Alignment.Center // Center the image within the Card
             )
         } else {
+            // Display the user's image using the CommonImage composable.
             CommonImage(data = userImage)
         }
     }
 }
 
+
+/**
+ * Displays a common divider.
+ *
+ * This composable displays a horizontal divider line with a light gray color.
+ * It is typically used to separate content within a layout.
+ */
 @Composable
 fun CommonDivider() {
     Divider(
@@ -172,5 +205,4 @@ fun CommonDivider() {
             .alpha(0.3f)
             .padding(top = 8.dp, bottom = 8.dp)
     )
-
 }

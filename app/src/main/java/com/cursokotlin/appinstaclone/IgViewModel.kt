@@ -1,5 +1,6 @@
 package com.cursokotlin.appinstaclone
 
+import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.cursokotlin.appinstaclone.data.Event
@@ -10,6 +11,7 @@ import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.lang.Exception
+import java.util.UUID
 import javax.inject.Inject
 
 const val USERS = "users"
@@ -41,36 +43,57 @@ class IgViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Handles the login process.
+     *
+     * This function attempts to log in a user with the provided [email] and [pass].
+     * It performs the following steps:
+     *
+     * 1. Check if the required fields (email and password) are not empty. If either is empty,
+     *    it handles the exception and returns.
+     * 2. Set the [inProgress] state to indicate that the login process is underway.
+     * 3. Use Firebase Authentication's [signInWithEmailAndPassword] method to attempt the login.
+     * 4. If the login is successful, it sets [signedIn] to true, resets the [inProgress] state,
+     *    and fetches user data using the [getUserData] function.
+     * 5. If the login fails, it handles the exception and resets the [inProgress] state.
+     *
+     * @param email The user's email address for login.
+     * @param pass The user's password for login.
+     */
     fun onLogin(email: String, pass: String) {
         // Ensure that the required fields are not empty
         if (email.isBlank() || pass.isBlank()) {
+            // Handle the exception and return
             handleException(customMessage = "Please fill in all the required fields")
             return
         }
 
+        // Set inProgress to true to indicate the login process has started
         inProgress.value = true
 
+        // Attempt to sign in with the provided email and password
         auth.signInWithEmailAndPassword(email, pass)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    // Login successful, update state and fetch user data
                     signedIn.value = true
                     inProgress.value = false
                     auth.currentUser?.uid?.let { uid ->
                         getUserData(uid)
                     }
                 } else {
+                    // Login failed, handle the exception and reset inProgress
                     handleException(task.exception, "Login failed")
                     inProgress.value = false
                 }
             }
             .addOnFailureListener { exc ->
+                // An error occurred during login, handle the exception and reset inProgress
                 handleException(exc, "Login failed")
                 inProgress.value = false
-
             }
-
-
     }
+
 
     /**
      * Handles the sign-up process for a new user.
@@ -233,8 +256,47 @@ class IgViewModel @Inject constructor(
 
     }
 
-    fun updateProfileData (name: String, username: String, bio: String){
+    /**
+     * Updates the user's profile data.
+     *
+     * This function takes the user's name, username, and bio as parameters and
+     * calls the [createOrUpdateProfile] function to update the user's profile with
+     * the provided information.
+     *
+     * @param name The user's full name.
+     * @param username The user's username.
+     * @param bio The user's bio or description.
+     */
+    fun updateProfileData(name: String, username: String, bio: String) {
+        // Call the createOrUpdateProfile function to update the user's profile.
         createOrUpdateProfile(name, username, bio)
+    }
+
+   private fun uploadImage(uri: Uri, onSuccess: (Uri) -> Unit){
+        inProgress.value = true
+
+        val storageRef = storage.reference
+        val uuid = UUID.randomUUID()
+        val imageRef = storageRef.child("images/$uuid")
+        val uploadTask = imageRef.putFile(uri)
+
+        uploadTask.addOnSuccessListener {
+            val result = it.metadata?.reference?.downloadUrl
+            result?.addOnSuccessListener (onSuccess)
+        }
+            .addOnFailureListener{exc ->
+                handleException(exc)
+                inProgress.value = false
+            }
+
+    }
+
+    fun uploadProfileImage(uri: Uri){
+        uploadImage(uri){
+            createOrUpdateProfile(imageUrl = it.toString())
+
+        }
+
     }
 
 }
