@@ -39,17 +39,28 @@ import com.cursokotlin.appinstaclone.main.composables.CommonImage
 import com.cursokotlin.appinstaclone.main.composables.CommonProgressSpinner
 import com.cursokotlin.appinstaclone.main.composables.navigateTo
 
+/**
+ * Displays the user's profile screen.
+ *
+ * @param navController The navigation controller for navigating to other screens.
+ * @param vm The view model associated with the profile.
+ */
 @Composable
 fun ProfileScreen(navController: NavController, vm: IgViewModel) {
+    // Check if there's a loading spinner to display
     val isLoading = vm.inProgress.value
     if (isLoading) {
         CommonProgressSpinner()
     } else {
+        // Retrieve user data from the view model
         val userData = vm.userData.value
+
+        // Initialize mutable state variables with user data or default values
         var name by rememberSaveable { mutableStateOf(userData?.name ?: "") }
         var username by rememberSaveable { mutableStateOf(userData?.username ?: "") }
         var bio by rememberSaveable { mutableStateOf(userData?.bio ?: "") }
 
+        // Display the profile content with editable fields
         ProfileContent(
             vm = vm,
             name = name,
@@ -60,13 +71,29 @@ fun ProfileScreen(navController: NavController, vm: IgViewModel) {
             onbioChange = { bio = it },
             onSave = { vm.updateProfileData(name, username, bio) },
             onBack = { navigateTo(navController, DestinationScreen.MyPosts) },
-            onLogout = { }
+            onLogout = {
+                vm.onLogout()
+                navigateTo(navController, DestinationScreen.Login)
+            }
         )
-
     }
-
 }
 
+
+/**
+ * Displays the user's profile content, including name, username, bio, and profile image.
+ *
+ * @param vm The view model associated with the profile.
+ * @param name The user's name.
+ * @param username The user's username.
+ * @param bio The user's bio.
+ * @param onNameChange A callback to handle changes to the user's name.
+ * @param onUsernameChange A callback to handle changes to the user's username.
+ * @param onbioChange A callback to handle changes to the user's bio.
+ * @param onSave A callback to handle the save action.
+ * @param onBack A callback to handle the back action.
+ * @param onLogout A callback to handle the logout action.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileContent(
@@ -81,8 +108,10 @@ fun ProfileContent(
     onBack: () -> Unit,
     onLogout: () -> Unit,
 ) {
-
+    // Remember the scroll state for the column
     val scrollState = rememberScrollState()
+
+    // Get the user's profile image URL from the view model
     val imageUrl = vm.userData?.value?.imageUrl
 
     Column(
@@ -90,6 +119,7 @@ fun ProfileContent(
             .verticalScroll(scrollState)
             .padding(8.dp)
     ) {
+        // Row for Back and Save buttons
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -98,25 +128,25 @@ fun ProfileContent(
         ) {
             Text(text = "Back", modifier = Modifier.clickable { onBack.invoke() })
             Text(text = "Save", modifier = Modifier.clickable { onSave.invoke() })
-
         }
 
+        // Divider
         CommonDivider()
 
+        // User's profile image
         ProfileImage(imageUrl = imageUrl, vm = vm)
 
+        // Divider
         CommonDivider()
 
+        // Name input
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 4.dp, end = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Name",
-                modifier = Modifier.width(100.dp)
-            )
+            Text(text = "Name", modifier = Modifier.width(100.dp))
             TextField(
                 value = name,
                 onValueChange = onNameChange,
@@ -125,19 +155,16 @@ fun ProfileContent(
                     textColor = Color.Black
                 )
             )
-
         }
 
+        // Username input
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 4.dp, end = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Username",
-                modifier = Modifier.width(100.dp)
-            )
+            Text(text = "Username", modifier = Modifier.width(100.dp))
             TextField(
                 value = username,
                 onValueChange = onUsernameChange,
@@ -146,19 +173,16 @@ fun ProfileContent(
                     textColor = Color.Black
                 )
             )
-
         }
 
+        // Bio input
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 4.dp, end = 4.dp),
             verticalAlignment = Alignment.Top
         ) {
-            Text(
-                text = "Bio",
-                modifier = Modifier.width(100.dp)
-            )
+            Text(text = "Bio", modifier = Modifier.width(100.dp))
             TextField(
                 value = bio,
                 onValueChange = onbioChange,
@@ -169,9 +193,9 @@ fun ProfileContent(
                 singleLine = false,
                 modifier = Modifier.height(150.dp)
             )
-
         }
 
+        // Logout button
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -179,32 +203,39 @@ fun ProfileContent(
             horizontalArrangement = Arrangement.Center
         ) {
             Text(text = "Logout", modifier = Modifier.clickable { onLogout.invoke() })
-
         }
-
     }
-
 }
 
+
+/**
+ * Displays a user's profile image and allows them to change it.
+ *
+ * This composable displays the user's profile image from the provided [imageUrl].
+ * Users can click on the image to select a new profile picture.
+ *
+ * @param imageUrl The URL of the user's profile image.
+ * @param vm The view model associated with the profile.
+ */
 @Composable
 fun ProfileImage(imageUrl: String?, vm: IgViewModel) {
-
+    // Define a launcher to handle selecting a new profile image
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ){ uri: Uri? ->
-        uri?.let{ vm.uploadProfileImage(uri)
-
-        }
+    ) { uri: Uri? ->
+        uri?.let { vm.uploadProfileImage(uri) }
     }
 
+    // Create a Box to contain the profile image and the loading spinner (if in progress)
     Box(modifier = Modifier.height(IntrinsicSize.Min)) {
         Column(
             modifier = Modifier
                 .padding(8.dp)
                 .fillMaxWidth()
-                .clickable { launcher.launch("image/*") },
+                .clickable { launcher.launch("image/*") }, // Launch the image picker when clicked
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Display the user's profile image in a circular Card
             Card(
                 shape = CircleShape,
                 modifier = Modifier
@@ -213,10 +244,11 @@ fun ProfileImage(imageUrl: String?, vm: IgViewModel) {
             ) {
                 CommonImage(data = imageUrl)
             }
+            // Text to indicate that the user can change their profile picture
             Text(text = "Change profile picture")
-
         }
 
+        // Check if there's a loading spinner to display
         val isLoading = vm.inProgress.value
         if (isLoading) {
             CommonProgressSpinner()

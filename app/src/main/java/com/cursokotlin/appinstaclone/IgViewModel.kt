@@ -272,31 +272,82 @@ class IgViewModel @Inject constructor(
         createOrUpdateProfile(name, username, bio)
     }
 
-   private fun uploadImage(uri: Uri, onSuccess: (Uri) -> Unit){
+    /**
+     * Uploads an image to Firebase Storage.
+     *
+     * This function takes a [uri] representing the image file to upload and a [onSuccess] callback
+     * to be executed when the upload is successful.
+     *
+     * @param uri The URI of the image to upload.
+     * @param onSuccess A callback to execute when the upload is successful, passing the download URI.
+     */
+    private fun uploadImage(uri: Uri, onSuccess: (Uri) -> Unit) {
+        // Set inProgress to true to indicate the upload process has started
         inProgress.value = true
 
+        // Get a reference to the Firebase Storage
         val storageRef = storage.reference
+
+        // Generate a unique identifier (UUID) for the image
         val uuid = UUID.randomUUID()
+
+        // Create a reference to the image in Firebase Storage
         val imageRef = storageRef.child("images/$uuid")
+
+        // Upload the image using putFile method
         val uploadTask = imageRef.putFile(uri)
 
         uploadTask.addOnSuccessListener {
+            // When upload is successful, get the download URL
             val result = it.metadata?.reference?.downloadUrl
-            result?.addOnSuccessListener (onSuccess)
+
+            // Execute the onSuccess callback with the download URI
+            result?.addOnSuccessListener(onSuccess)
         }
-            .addOnFailureListener{exc ->
+            .addOnFailureListener { exc ->
+                // An error occurred during upload, handle the exception and reset inProgress
                 handleException(exc)
                 inProgress.value = false
             }
-
     }
 
-    fun uploadProfileImage(uri: Uri){
-        uploadImage(uri){
-            createOrUpdateProfile(imageUrl = it.toString())
-
+    /**
+     * Uploads a user's profile image.
+     *
+     * This function takes a [uri] representing the image file to upload as the user's profile image.
+     * It calls the [uploadImage] function to perform the upload and, on success, updates the user's
+     * profile with the uploaded image URL.
+     *
+     * @param uri The URI of the profile image to upload.
+     */
+    fun uploadProfileImage(uri: Uri) {
+        // Call the uploadImage function to upload the profile image
+        uploadImage(uri) { imageUrl ->
+            // When the image upload is successful, update the user's profile with the image URL
+            createOrUpdateProfile(imageUrl = imageUrl.toString())
         }
-
     }
+
+    /**
+     * Logs the user out of the application.
+     *
+     * This function signs the user out of their account, updates the authentication state,
+     * clears the user data, and displays a logout notification.
+     */
+    fun onLogout() {
+        // Sign the user out of their account
+        auth.signOut()
+
+        // Update the authentication state to indicate that the user is no longer signed in
+        signedIn.value = false
+
+        // Clear the user data
+        userData.value = null
+
+        // Display a logout notification using an event
+        popupNotification.value = Event("Logged out")
+    }
+
+
 
 }
