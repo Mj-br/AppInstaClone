@@ -1,5 +1,6 @@
 package com.cursokotlin.appinstaclone
 
+import android.net.Uri
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.cursokotlin.appinstaclone.data.Event
@@ -10,6 +11,7 @@ import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.lang.Exception
+import java.util.UUID
 import javax.inject.Inject
 
 const val USERS = "users"
@@ -41,36 +43,57 @@ class IgViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Handles the login process.
+     *
+     * This function attempts to log in a user with the provided [email] and [pass].
+     * It performs the following steps:
+     *
+     * 1. Check if the required fields (email and password) are not empty. If either is empty,
+     *    it handles the exception and returns.
+     * 2. Set the [inProgress] state to indicate that the login process is underway.
+     * 3. Use Firebase Authentication's [signInWithEmailAndPassword] method to attempt the login.
+     * 4. If the login is successful, it sets [signedIn] to true, resets the [inProgress] state,
+     *    and fetches user data using the [getUserData] function.
+     * 5. If the login fails, it handles the exception and resets the [inProgress] state.
+     *
+     * @param email The user's email address for login.
+     * @param pass The user's password for login.
+     */
     fun onLogin(email: String, pass: String) {
         // Ensure that the required fields are not empty
         if (email.isBlank() || pass.isBlank()) {
+            // Handle the exception and return
             handleException(customMessage = "Please fill in all the required fields")
             return
         }
 
+        // Set inProgress to true to indicate the login process has started
         inProgress.value = true
 
+        // Attempt to sign in with the provided email and password
         auth.signInWithEmailAndPassword(email, pass)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    // Login successful, update state and fetch user data
                     signedIn.value = true
                     inProgress.value = false
                     auth.currentUser?.uid?.let { uid ->
                         getUserData(uid)
                     }
                 } else {
+                    // Login failed, handle the exception and reset inProgress
                     handleException(task.exception, "Login failed")
                     inProgress.value = false
                 }
             }
             .addOnFailureListener { exc ->
+                // An error occurred during login, handle the exception and reset inProgress
                 handleException(exc, "Login failed")
                 inProgress.value = false
-
             }
-
-
     }
+
 
     /**
      * Handles the sign-up process for a new user.
@@ -232,5 +255,99 @@ class IgViewModel @Inject constructor(
         popupNotification.value = Event(message)
 
     }
+
+    /**
+     * Updates the user's profile data.
+     *
+     * This function takes the user's name, username, and bio as parameters and
+     * calls the [createOrUpdateProfile] function to update the user's profile with
+     * the provided information.
+     *
+     * @param name The user's full name.
+     * @param username The user's username.
+     * @param bio The user's bio or description.
+     */
+    fun updateProfileData(name: String, username: String, bio: String) {
+        // Call the createOrUpdateProfile function to update the user's profile.
+        createOrUpdateProfile(name, username, bio)
+    }
+
+    /**
+     * Uploads an image to Firebase Storage.
+     *
+     * This function takes a [uri] representing the image file to upload and a [onSuccess] callback
+     * to be executed when the upload is successful.
+     *
+     * @param uri The URI of the image to upload.
+     * @param onSuccess A callback to execute when the upload is successful, passing the download URI.
+     */
+    private fun uploadImage(uri: Uri, onSuccess: (Uri) -> Unit) {
+        // Set inProgress to true to indicate the upload process has started
+        inProgress.value = true
+
+        // Get a reference to the Firebase Storage
+        val storageRef = storage.reference
+
+        // Generate a unique identifier (UUID) for the image
+        val uuid = UUID.randomUUID()
+
+        // Create a reference to the image in Firebase Storage
+        val imageRef = storageRef.child("images/$uuid")
+
+        // Upload the image using putFile method
+        val uploadTask = imageRef.putFile(uri)
+
+        uploadTask.addOnSuccessListener {
+            // When upload is successful, get the download URL
+            val result = it.metadata?.reference?.downloadUrl
+
+            // Execute the onSuccess callback with the download URI
+            result?.addOnSuccessListener(onSuccess)
+        }
+            .addOnFailureListener { exc ->
+                // An error occurred during upload, handle the exception and reset inProgress
+                handleException(exc)
+                inProgress.value = false
+            }
+    }
+
+    /**
+     * Uploads a user's profile image.
+     *
+     * This function takes a [uri] representing the image file to upload as the user's profile image.
+     * It calls the [uploadImage] function to perform the upload and, on success, updates the user's
+     * profile with the uploaded image URL.
+     *
+     * @param uri The URI of the profile image to upload.
+     */
+    fun uploadProfileImage(uri: Uri) {
+        // Call the uploadImage function to upload the profile image
+        uploadImage(uri) { imageUrl ->
+            // When the image upload is successful, update the user's profile with the image URL
+            createOrUpdateProfile(imageUrl = imageUrl.toString())
+        }
+    }
+
+    /**
+     * Logs the user out of the application.
+     *
+     * This function signs the user out of their account, updates the authentication state,
+     * clears the user data, and displays a logout notification.
+     */
+    fun onLogout() {
+        // Sign the user out of their account
+        auth.signOut()
+
+        // Update the authentication state to indicate that the user is no longer signed in
+        signedIn.value = false
+
+        // Clear the user data
+        userData.value = null
+
+        // Display a logout notification using an event
+        popupNotification.value = Event("Logged out")
+    }
+
+
 
 }
