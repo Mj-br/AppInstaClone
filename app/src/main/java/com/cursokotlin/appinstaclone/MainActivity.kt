@@ -19,6 +19,7 @@ import com.cursokotlin.appinstaclone.auth.SingUpScreen
 import com.cursokotlin.appinstaclone.main.composables.screens.FeedScreen
 import com.cursokotlin.appinstaclone.main.composables.NotificationMessage
 import com.cursokotlin.appinstaclone.main.composables.screens.MyPostsScreen
+import com.cursokotlin.appinstaclone.main.composables.screens.NewPostsScreen
 import com.cursokotlin.appinstaclone.main.composables.screens.SearchScreen
 import com.cursokotlin.appinstaclone.ui.theme.AppInstaCloneTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -44,8 +45,11 @@ sealed class DestinationScreen(val route: String){
     object Feed: DestinationScreen("feed")
     object Search: DestinationScreen("search")
     object MyPosts: DestinationScreen("myposts")
-
     object Profile: DestinationScreen("profile")
+
+    object NewPost:DestinationScreen("newpost/{imageUri}"){
+        fun createRoute(uri: String) = "newpost/$uri"
+    }
 }
 
 @Composable
@@ -77,6 +81,13 @@ fun InstagramApp(){
 
         composable(DestinationScreen.Profile.route){
             ProfileScreen(navController = navController, vm = vm)
+        }
+
+        composable(DestinationScreen.NewPost.route){ navBackStackEntry ->
+            val imageUri = navBackStackEntry.arguments?.getString("imageUri")
+            imageUri?.let {
+                NewPostsScreen(navController = navController, viewModel = vm, encodeUri = it )
+            }
         }
 
     }

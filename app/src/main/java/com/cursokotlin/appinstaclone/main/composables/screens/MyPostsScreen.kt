@@ -1,5 +1,9 @@
 package com.cursokotlin.appinstaclone.main.composables.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -37,6 +41,28 @@ import com.cursokotlin.appinstaclone.main.composables.navigateTo
 @Composable
 fun MyPostsScreen(navController: NavController, vm: IgViewModel) {
 
+    /**
+     * Launcher for selecting an image for a new post.
+     *
+     * This launcher is used to launch the image picker activity and handle the result.
+     * When an image is selected, it encodes the image URI and navigates to the new post screen
+     * with the encoded URI as a parameter.
+     */
+    val newPostImageLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
+            uri?.let {
+                // Encode the selected image URI as a string
+                val encoded = Uri.encode(it.toString())
+
+                // Create a route to the new post screen with the encoded URI as a parameter
+                val route = DestinationScreen.NewPost.createRoute(encoded)
+
+                // Navigate to the new post screen
+                navController.navigate(route)
+            }
+        }
+
+
     val userData = vm.userData.value
     val isLoading = vm.inProgress.value
 
@@ -45,7 +71,7 @@ fun MyPostsScreen(navController: NavController, vm: IgViewModel) {
         Column(modifier = Modifier.weight(1f)) {
             Row {
                 ProfileImage(userData?.imageUrl) {
-
+                    newPostImageLauncher.launch("image/*")
                 }
 
                 Text(
@@ -113,7 +139,7 @@ fun MyPostsScreen(navController: NavController, vm: IgViewModel) {
 
     }
 
-    if(isLoading){
+    if (isLoading) {
         CommonProgressSpinner()
     }
 }
