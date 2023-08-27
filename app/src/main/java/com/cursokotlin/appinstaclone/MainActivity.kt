@@ -86,7 +86,7 @@ fun InstagramApp(){
         composable(DestinationScreen.NewPost.route){ navBackStackEntry ->
             val imageUri = navBackStackEntry.arguments?.getString("imageUri")
             imageUri?.let {
-                NewPostsScreen(navController = navController, viewModel = vm, encodeUri = it )
+                NewPostsScreen(navController = navController, vm = vm, encodeUri = it )
             }
         }
 
