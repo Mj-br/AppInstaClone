@@ -1,12 +1,15 @@
 package com.cursokotlin.appinstaclone
 
 import android.net.Uri
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.cursokotlin.appinstaclone.data.Event
+import com.cursokotlin.appinstaclone.data.PostData
 import com.cursokotlin.appinstaclone.data.UserData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,6 +18,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 const val USERS = "users"
+const val POSTS = "posts"
 
 @HiltViewModel
 class IgViewModel @Inject constructor(
@@ -28,6 +32,9 @@ class IgViewModel @Inject constructor(
     val userData = mutableStateOf<UserData?>(null)
     val popupNotification = mutableStateOf<Event<String>?>(null)
 
+    val refreshPostsProgress = mutableStateOf(false)
+    val posts = mutableStateOf<List<PostData>>(listOf())
+
 
     init {
 //        auth.signOut()
@@ -37,9 +44,13 @@ class IgViewModel @Inject constructor(
         // Check if a user is currently signed in and update the signedIn value accordingly
         signedIn.value = currentUser != null
 
-        // If a user is signed in, retrieve their UID and fetch user data
+        // If a user is signed in, retrieve their UID
         currentUser?.uid?.let { uid ->
+            // Fetch user data based on the UID
             getUserData(uid)
+
+            // Refresh the user's posts
+            refreshPosts()
         }
     }
 
@@ -346,6 +357,157 @@ class IgViewModel @Inject constructor(
 
         // Display a logout notification using an event
         popupNotification.value = Event("Logged out")
+    }
+
+    /**
+     * Handles the creation of a new post with an image and description.
+     *
+     * This function takes an [uri] representing the image file to be posted,
+     * a [description] for the post, and a [onPostSuccess] callback to be executed when the post is successful.
+     * It performs the following steps:
+     *
+     * 1. Uploads the image using the [uploadImage] function.
+     * 2. Calls [onCreatePost] with the image URL, description, and [onPostSuccess] callback.
+     *
+     * @param uri The URI of the image to be posted.
+     * @param description The description for the new post.
+     * @param onPostSuccess A callback to execute when the post is successful.
+     */
+    fun onNewPost(uri: Uri, description: String, onPostSuccess: () -> Unit) {
+        // Upload the image using the uploadImage function
+        uploadImage(uri) {
+            // Call onCreatePost with the image URL, description, and onPostSuccess callback
+            onCreatePost(it, description, onPostSuccess)
+        }
+    }
+
+    /**
+     * Creates a new post with the provided image URL, description, and user information.
+     *
+     * This function performs the following steps:
+     *
+     * 1. Sets inProgress to true to indicate the post creation process has started.
+     * 2. Retrieves the current user's UID, username, and user image from the authentication and user data.
+     * 3. If the current user's UID is available, generates a unique post UUID.
+     * 4. Creates a new PostData object with the provided information.
+     * 5. Saves the post data to the Firestore database.
+     * 6. Handles success by displaying a success notification, resetting inProgress, and invoking onPostSuccess callback.
+     * 7. Handles failure by handling the exception, resetting inProgress, and displaying an error message.
+     *
+     * @param imageUri The URI of the image to be posted.
+     * @param description The description for the new post.
+     * @param onPostSuccess A callback to execute when the post is successful.
+     */
+    private fun onCreatePost(imageUri: Uri, description: String, onPostSuccess: () -> Unit) {
+        // Set inProgress to true to indicate the post creation process has started
+        inProgress.value = true
+
+        // Retrieve current user information
+        val currentUid = auth.currentUser?.uid
+        val currentUsername = userData?.value?.username
+        val currentUserImage = userData?.value?.imageUrl
+
+        // Check if the current user's UID is available
+        if (currentUid != null) {
+            // Generate a unique post UUID
+            val postUuid = UUID.randomUUID().toString()
+
+            // Create a new PostData object with the provided information
+            val post = PostData(
+                postId = postUuid,
+                userId = currentUid,
+                username = currentUsername,
+                userImage = currentUserImage,
+                postImage = imageUri.toString(),
+                postDescription = description,
+                time = System.currentTimeMillis()
+            )
+
+            // Save the post data to the Firestore database
+            db.collection(POSTS).document(postUuid).set(post)
+                .addOnSuccessListener {
+                    // Handle success by displaying a success notification, resetting inProgress, and invoking onPostSuccess
+                    popupNotification.value = Event("Post successfully created")
+                    inProgress.value = false
+                    // Refresh the user's posts
+                    refreshPosts()
+
+                    // Invoke the onPostSuccess callback
+                    onPostSuccess.invoke()
+                }
+                .addOnFailureListener { exc ->
+                    // Handle failure by handling the exception, resetting inProgress, and displaying an error message
+                    handleException(exc, "Unable to create post")
+                    inProgress.value = false
+                }
+        } else {
+            // Handle the case where the current user's UID is not available
+            handleException(customMessage = "Error, username unavailable. Unable to create post")
+            onLogout()
+            inProgress.value = false
+        }
+    }
+
+    /**
+     * Refreshes the user's posts and updates the post list in the app's state.
+     *
+     * This function performs the following steps:
+     *
+     * 1. Retrieves the current user's UID from authentication.
+     * 2. If the current UID is available, sets refreshPostsProgress to true to indicate the refresh process has started.
+     * 3. Queries the Firestore database for posts where the "userId" field matches the current UID.
+     * 4. On success, converts the retrieved documents into PostData objects and updates the post list.
+     * 5. Sets refreshPostsProgress to false to indicate the refresh process is complete.
+     * 6. On failure, handles the exception and sets refreshPostsProgress to false.
+     * 7. If the current UID is not available, handles the case where the username is unavailable and logs the user out.
+     */
+    private fun refreshPosts() {
+        val currentUid = auth.currentUser?.uid
+        if (currentUid != null) {
+            // Set refreshPostsProgress to true to indicate the refresh process has started
+            refreshPostsProgress.value = true
+
+            // Query Firestore for posts where the "userId" field matches the current UID
+            db.collection(POSTS).whereEqualTo("userId", currentUid).get()
+                .addOnSuccessListener { documents ->
+                    // Convert the retrieved documents into PostData objects and update the post list
+                    convertPosts(documents, posts)
+
+                    // Set refreshPostsProgress to false to indicate the refresh process is complete
+                    refreshPostsProgress.value = false
+                }
+                .addOnFailureListener { exc ->
+                    // Handle failure by displaying an error message, and set refreshPostsProgress to false
+                    handleException(exc, "Cannot fetch posts")
+                    refreshPostsProgress.value = false
+                }
+        } else {
+            // Handle the case where the current UID is not available
+            handleException(customMessage = "Error, username unavailable. Unable to refresh posts")
+
+            // Log the user out
+            onLogout()
+        }
+    }
+
+    /**
+     * Converts Firestore query results into a list of PostData objects and sorts them by time.
+     *
+     * @param documents The Firestore query results.
+     * @param outState A mutable state that holds the list of posts to be updated.
+     */
+    private fun convertPosts(documents: QuerySnapshot, outState: MutableState<List<PostData>>) {
+        val newPosts = mutableListOf<PostData>()
+        documents.forEach { doc ->
+            val post = doc.toObject<PostData>()
+            newPosts.add(post)
+        }
+
+        // Sort the new posts by descending time
+        val sortedPosts = newPosts.sortedByDescending { it.time }
+
+        // Update the post list in the app's state
+        outState.value = sortedPosts
     }
 
 

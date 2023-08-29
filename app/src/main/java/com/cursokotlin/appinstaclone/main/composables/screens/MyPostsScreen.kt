@@ -69,10 +69,11 @@ fun MyPostsScreen(navController: NavController, vm: IgViewModel) {
 
     Column {
         Column(modifier = Modifier.weight(1f)) {
-            Row {
+            Row  {
                 ProfileImage(userData?.imageUrl) {
                     newPostImageLauncher.launch("image/*")
                 }
+                Row(modifier = Modifier.padding(top= 48.dp)) {
 
                 Text(
                     text = "15\nposts", modifier = Modifier
@@ -94,6 +95,7 @@ fun MyPostsScreen(navController: NavController, vm: IgViewModel) {
                         .align(Alignment.CenterVertically),
                     textAlign = TextAlign.Center
                 )
+                }
 
             }
             Column(
