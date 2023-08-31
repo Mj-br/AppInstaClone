@@ -40,24 +40,8 @@ import coil.compose.rememberImagePainter
 import com.cursokotlin.appinstaclone.IgViewModel
 import com.cursokotlin.appinstaclone.data.PostData
 import com.cursokotlin.appinstaclone.main.composables.CommonDivider
+import com.cursokotlin.appinstaclone.main.composables.CommonImage
 import com.cursokotlin.appinstaclone.main.composables.CommonProgressSpinner
-
-data class PostRow(
-    var post1: PostData? = null,
-    var post2: PostData? = null,
-    var post3: PostData? = null,
-) {
-    fun isFull() = post1 != null && post2 != null && post3 != null
-    fun add(post: PostData) {
-        if (post1 == null) {
-            post1 = post
-        } else if (post2 == null) {
-            post2 = post
-        } else if (post3 == null) {
-            post3 = post
-        }
-    }
-}
 
 /**
  * Displays the screen for creating a new post with an image and description.
@@ -145,46 +129,3 @@ fun NewPostsScreen(navController: NavController, vm: IgViewModel, encodeUri: Str
     }
 }
 
-@Composable
-fun PostList(
-    isContextLoading: Boolean,
-    postsLoading: Boolean,
-    posts: List<PostData>,
-    modifier: Modifier,
-    onPostClick: (PostData) -> Unit
-) {
-    if (postsLoading){
-        CommonProgressSpinner()
-    } else if(posts.isEmpty()){
-        Column(
-            modifier = modifier,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            if (!isContextLoading) Text(text = "No posts available")
-        }
-    } else {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            modifier = modifier.scale(1.01f)
-        ){
-
-
-
-//            items(posts.size ){
-//                Image(
-//                    painter = posts[it],
-//                    contentDescription = null,
-//                    contentScale = ContentScale.Crop,
-//                    modifier = Modifier
-//                        .aspectRatio(1f)
-//                        .border(
-//                            width = 1.dp,
-//                            color = Color.White
-//                        )
-//                )
-//            }
-        }
-    }
-
-}
