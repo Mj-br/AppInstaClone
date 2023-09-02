@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -236,7 +235,7 @@ fun PostList(
     } else {
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
-            modifier = modifier.scale(1.01f)
+            modifier = modifier.scale(1.02f)
         ) {
             items(posts.size) { postIndex ->
                 val post = posts[postIndex]
@@ -254,12 +253,11 @@ fun PostBox(item: PostBoxData, onPostClick: (PostData) -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
+            .height(135.dp)
     ) {
         PostImage(
             imageUrl = item.myPost?.postImage,
             modifier = Modifier
-                .aspectRatio(1f)
                 .border(
                     width = 1.dp,
                     color = Color.White
