@@ -69,14 +69,18 @@ fun CommonProgressSpinner(
     }
 }
 
+
 /**
- * Navigates to a specified destination screen using a NavController.
+ * Navigates to a specified destination screen with optional [parameter].
  *
- * @param navController The NavController responsible for navigation.
+ * @param navController The NavController used for navigation.
  * @param dest The destination screen to navigate to.
+ * @param parameter The optional post ID to append to the route.
  */
-fun navigateTo(navController: NavController, dest: DestinationScreen) {
-    navController.navigate(dest.route) {
+fun navigateTo(navController: NavController, dest: DestinationScreen, parameter: String? = null) {
+    // Use the NavController to navigate to the specified destination screen.
+    // The route for navigation is constructed using the buildRoute function.
+    navController.navigate(buildRoute(dest, parameter)) {
         /* Specify navigation behavior */
 
         // Pop up to the destination screen to remove intermediate destinations from the back stack
@@ -86,6 +90,24 @@ fun navigateTo(navController: NavController, dest: DestinationScreen) {
         launchSingleTop = true
     }
 }
+
+/**
+ * Builds a route for navigation to a destination screen with an optional [parameter].
+ *
+ * @param dest The destination screen to navigate to.
+ * @param parameter The optional post ID to append to the route.
+ * @return The constructed route.
+ */
+private fun buildRoute(dest: DestinationScreen, parameter: String? = null): String {
+    return if (parameter != null) {
+        // If a postId is provided, construct the route by appending it to the destination's route.
+        "${dest.route}/$parameter"
+    } else {
+        // If no postId is provided, use only the destination's route.
+        dest.route
+    }
+}
+
 
 /**
  * Checks if a user is signed in and, if so, navigates to the Feed screen.

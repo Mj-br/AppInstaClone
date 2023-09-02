@@ -54,7 +54,6 @@ sealed class DestinationScreen(val route: String) {
     object NewPost : DestinationScreen("newpost/{imageUri}") {
         fun createRoute(uri: String) = "newpost/$uri"
     }
-
     object SinglePost : DestinationScreen("singlepost")
 }
 
@@ -96,19 +95,20 @@ fun InstagramApp() {
             }
         }
 
-        composable(DestinationScreen.SinglePost.route) {
-            val postData =
-                navController.previousBackStackEntry?.arguments?.getParcelable<PostData>("post")
-            postData?.let {
-                SinglePostScreen(navController = navController, vm = vm, post = postData)
+        composable(DestinationScreen.SinglePost.route + "/{postId}") { backStackEntry ->
+            val postId = backStackEntry.arguments?.getString("postId")
+            postId?.let { id ->
+                val post = vm.getPostById(id)
+                SinglePostScreen(navController = navController, vm = vm, post = post)
             }
         }
+
 
     }
 
 }
 
-
+@Preview
 @Composable
 fun GreetingPreview() {
     AppInstaCloneTheme {

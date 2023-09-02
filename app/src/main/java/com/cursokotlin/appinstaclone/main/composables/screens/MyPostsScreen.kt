@@ -165,8 +165,8 @@ fun MyPostsScreen(navController: NavController, vm: IgViewModel) {
                 postsLoading = postsLoading,
                 posts = posts,
                 modifier = Modifier.weight(1f).padding(1.dp).fillMaxSize()
-            ) {
-               // On Post click
+            ) {postId ->
+               navigateTo(navController, dest = DestinationScreen.SinglePost, parameter = postId)
                 }
         }
         BottomNavigationMenu(
@@ -181,17 +181,27 @@ fun MyPostsScreen(navController: NavController, vm: IgViewModel) {
     }
 }
 
+/**
+ * Displays a user's profile image in a clickable box.
+ *
+ * @param imageUrl The URL of the user's profile image.
+ * @param onClick A lambda function to handle click events on the profile image.
+ */
 @Composable
 fun ProfileImage(imageUrl: String?, onClick: () -> Unit) {
-    Box(modifier = Modifier
-        .padding(top = 16.dp)
-        .clickable { onClick.invoke() }) {
-
+    Box(
+        modifier = Modifier
+            .padding(top = 16.dp)
+            .clickable { onClick.invoke() } // Invoke the provided lambda function on click
+    ) {
+        // Display the user's profile image in a UserImageCard
         UserImageCard(
-            userImage = imageUrl, modifier = Modifier
+            userImage = imageUrl,
+            modifier = Modifier
                 .padding(8.dp)
                 .size(80.dp)
         )
+        // Display a circular "Add" button in a Card overlay
         Card(
             shape = CircleShape,
             border = BorderStroke(width = 2.dp, color = Color.White),
@@ -200,83 +210,118 @@ fun ProfileImage(imageUrl: String?, onClick: () -> Unit) {
                 .align(Alignment.BottomEnd)
                 .padding(bottom = 8.dp, end = 8.dp)
         ) {
+            // Display the "Add" icon with a blue background
             Image(
-                painter = painterResource(id = R.drawable.ic_add),
+                painter = painterResource(id = R.drawable.ic_add), // Replace with your "Add" icon resource
                 contentDescription = null,
                 modifier = Modifier
                     .background(Color.Blue)
             )
-
         }
     }
-
 }
 
 
+/**
+ * Displays a list of posts in a grid layout.
+ *
+ * @param isContextLoading A boolean indicating whether the context (e.g., user data) is loading.
+ * @param postsLoading A boolean indicating whether the posts are currently loading.
+ * @param posts The list of [PostData] objects to display.
+ * @param modifier Modifier for customizing the appearance and behavior of the PostList.
+ * @param onPostClick A lambda function to handle post click events. It receives the postId as a parameter.
+ */
 @Composable
 fun PostList(
     isContextLoading: Boolean,
     postsLoading: Boolean,
     posts: List<PostData>,
     modifier: Modifier,
-    onPostClick: (PostData) -> Unit
+    onPostClick: (String?) -> Unit
 ) {
-
+    // Check if posts are currently loading
     if (postsLoading) {
-        CommonProgressSpinner()
+        CommonProgressSpinner() // Display a loading spinner
     } else if (posts.isEmpty()) {
+        // If there are no posts and context is not loading, show a message
         Column(
             modifier = modifier,
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            if (!isContextLoading) Text(text = "No posts available")
+            if (!isContextLoading) {
+                Text(text = "No posts available")
+            }
         }
     } else {
+        // Display the posts in a LazyVerticalGrid
         LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            modifier = modifier.scale(1.02f)
+            columns = GridCells.Fixed(3), // Display 3 columns in the grid
+            modifier = modifier.scale(1.02f) // Apply a scaling modifier to the grid
         ) {
             items(posts.size) { postIndex ->
+                // Get the post at the current index
                 val post = posts[postIndex]
+                // Create PostBoxData for the current post
                 val postBoxData = PostBoxData(myPost = post)
+                // Display the post using the PostBox composable
                 PostBox(item = postBoxData, onPostClick = onPostClick)
             }
         }
-
-
     }
 }
 
+
+/**
+ * Displays a post in a Box container with optional click behavior.
+ *
+ * @param item The [PostBoxData] representing the post to display.
+ * @param onPostClick A lambda function to handle post click events. It receives the postId as a parameter.
+ */
 @Composable
-fun PostBox(item: PostBoxData, onPostClick: (PostData) -> Unit) {
+fun PostBox(item: PostBoxData, onPostClick: (String?) -> Unit) {
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(135.dp)
+            .fillMaxWidth() // Make the box take the maximum available width
+            .height(135.dp) // Set the height of the box
     ) {
+        // Inside the Box, there is a PostImage composable
         PostImage(
-            imageUrl = item.myPost?.postImage,
+            imageUrl = item.myPost?.postImage, // Get the URL of the post's image from the data
             modifier = Modifier
                 .border(
-                    width = 1.dp,
-                    color = Color.White
+                    width = 1.dp, // Set a border around the image
+                    color = Color.White // Border color is white
                 )
-                .clickable { item.myPost?.let { post -> onPostClick(post) } }
+                .clickable { // Add a clickable behavior to the image
+                    item.myPost?.let { post ->
+                        // When clicked, invoke the onPostClick lambda function with the postId
+                        onPostClick(post.postId) // Pass the postId to the click handler
+                    }
+                }
         )
-
     }
 }
 
+/**
+ * Displays an image in a Box container with optional click behavior.
+ *
+ * @param imageUrl The URL of the image to display.
+ * @param modifier Modifier for customizing the image container.
+ */
 @Composable
 fun PostImage(imageUrl: String?, modifier: Modifier) {
+    // Create a Box composable to display an image
     Box(modifier = modifier) {
+        // Define a modifier variable for further customization
         var modifier = Modifier
-            .padding(1.dp)
-            .fillMaxSize()
+            .padding(1.dp) // Apply padding around the image
+            .fillMaxSize() // Make the image fill the available space
         if (imageUrl == null) {
+            // If imageUrl is null, make the image unclickable
             modifier = modifier.clickable(enabled = false) { }
         }
+        // Use the CommonImage composable to display the image with the given data and modifiers
         CommonImage(data = imageUrl, modifier = modifier, contentScale = ContentScale.Crop)
     }
 }

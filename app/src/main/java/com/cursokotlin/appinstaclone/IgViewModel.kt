@@ -510,6 +510,19 @@ class IgViewModel @Inject constructor(
         outState.value = sortedPosts
     }
 
+    /**
+     * Retrieves a post with a specified [postId] from the list of posts.
+     *
+     * @param postId The unique identifier of the post to retrieve.
+     * @return The [PostData] object with the matching [postId], or null if not found.
+     */
+    fun getPostById(postId: String): PostData? {
+        // Use the 'firstOrNull' function to find the first post with a matching 'postId'
+        // in the list of posts ('posts.value').
+        // If a matching post is found, it is returned; otherwise, 'null' is returned.
+        return posts.value.firstOrNull { it.postId == postId }
+    }
+
 
 
 }
