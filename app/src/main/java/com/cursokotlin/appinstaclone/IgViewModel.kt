@@ -171,7 +171,7 @@ class IgViewModel @Inject constructor(
 
         // Create a UserData object with the provided or existing values
         val userData = UserData(
-            userId = null, //TODO: ADD NEW LOGIC HERE
+            userId = uid,
             name = name ?: userData.value?.name,
             username = username ?: userData.value?.username,
             bio = bio ?: userData.value?.username,
