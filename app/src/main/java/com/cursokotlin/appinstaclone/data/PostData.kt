@@ -10,5 +10,6 @@ data class PostData (
     val userImage: String? = null,
     val postImage: String? = null,
     val postDescription: String? = null,
-    val time: Long? = null
+    val time: Long? = null,
+    val likes: List<String>? = null
 )

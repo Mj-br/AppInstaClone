@@ -6,29 +6,28 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import coil.compose.rememberImagePainter
 import com.cursokotlin.appinstaclone.IgViewModel
 import com.cursokotlin.appinstaclone.data.PostData
 import com.cursokotlin.appinstaclone.main.composables.CommonDivider
 import com.cursokotlin.appinstaclone.main.composables.CommonImage
 import com.cursokotlin.appinstaclone.main.composables.UserImageCard
-import java.nio.file.WatchEvent
+import com.cursokotlin.appinstaclone.R
 
 @Composable
 fun SinglePostScreen(
@@ -66,9 +65,7 @@ fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostD
     ) {
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
         ) {
             UserImageCard(
                 userImage = userData?.imageUrl,
@@ -93,11 +90,26 @@ fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostD
         val modifier = Modifier
             .fillMaxWidth()
             .defaultMinSize(minHeight = 150.dp)
+            .scale(1.04f)
+            .size(100.dp)
         CommonImage(
             data = post.postImage,
             modifier = modifier,
             contentScale = ContentScale.FillWidth
         )
+    }
+
+    Row(
+        modifier = Modifier.padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_like), contentDescription = null,
+            modifier = Modifier.size(24.dp),
+            colorFilter = ColorFilter.tint(Color.Red)
+        )
+        Text(text = "${post.likes?.size ?: 0} likes", modifier = Modifier.padding(start = 0.dp))
+
     }
 
 }
