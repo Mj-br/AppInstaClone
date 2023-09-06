@@ -36,6 +36,9 @@ class IgViewModel @Inject constructor(
     val refreshPostsProgress = mutableStateOf(false)
     val posts = mutableStateOf<List<PostData>>(listOf())
 
+    val searchedPosts = mutableStateOf<List<PostData>>(listOf())
+    val searchedPostsProgress = mutableStateOf(false)
+
 
     init {
 //        auth.signOut()
@@ -442,6 +445,9 @@ class IgViewModel @Inject constructor(
      * @param imageUri The URI of the image to be posted.
      * @param description The description for the new post.
      * @param onPostSuccess A callback to execute when the post is successful.
+     *
+     * Additionally, this function performs keyword extraction from the post description:
+     *  - Splits the description into words and removes common filler words in both English and Spanish.
      */
     private fun onCreatePost(imageUri: Uri, description: String, onPostSuccess: () -> Unit) {
         // Set inProgress to true to indicate the post creation process has started
@@ -457,7 +463,228 @@ class IgViewModel @Inject constructor(
             // Generate a unique post UUID
             val postUuid = UUID.randomUUID().toString()
 
-            val fillerWords = listOf("the", "be", "to", "is", "of", "and", "or", "a", "in", "it")
+            val fillerWords = listOf(
+                // English Filler Words
+                "the",
+                "be",
+                "to",
+                "is",
+                "of",
+                "and",
+                "or",
+                "a",
+                "in",
+                "it",
+                "I",
+                "you",
+                "he",
+                "she",
+                "we",
+                "they",
+                "my",
+                "your",
+                "his",
+                "her",
+                "its",
+                "our",
+                "their",
+                "mine",
+                "yours",
+                "hers",
+                "ours",
+                "theirs",
+                "this",
+                "that",
+                "these",
+                "those",
+                "am",
+                "are",
+                "was",
+                "were",
+                "have",
+                "has",
+                "had",
+                "do",
+                "does",
+                "did",
+                "can",
+                "could",
+                "will",
+                "would",
+                "shall",
+                "should",
+                "may",
+                "might",
+                "must",
+                "of",
+                "off",
+                "by",
+                "for",
+                "with",
+                "about",
+                "against",
+                "between",
+                "into",
+                "through",
+                "during",
+                "before",
+                "after",
+                "above",
+                "below",
+                "under",
+                "over",
+                "around",
+                "throughout",
+                "up",
+                "down",
+                "upon",
+                "toward",
+                "against",
+                "aboard",
+                "along",
+                "amid",
+                "among",
+                "beside",
+                "between",
+                "beyond",
+                "concerning",
+                "considering",
+                "despite",
+                "except",
+                "inside",
+                "outside",
+                "regarding",
+                "respecting",
+                "towards",
+                "beneath",
+                "betwixt",
+                "past",
+                "except",
+                "pending",
+                "till",
+                "via",
+                "worth",
+
+                // Spanish Filler Words
+                "en",
+                "el",
+                "la",
+                "las",
+                "a",
+                "es",
+                "de",
+                "y",
+                "o",
+                "lo",
+                "los",
+                "yo",
+                "tú",
+                "él",
+                "ella",
+                "nosotros",
+                "vosotros",
+                "ellos",
+                "ellas",
+                "mi",
+                "tu",
+                "su",
+                "nuestro",
+                "vuestro",
+                "suyo",
+                "mío",
+                "tuyo",
+                "nuestro",
+                "vuestro",
+                "suyo",
+                "este",
+                "ese",
+                "aquel",
+                "esta",
+                "esa",
+                "aquella",
+                "estos",
+                "esos",
+                "aquellos",
+                "estas",
+                "esas",
+                "aquellas",
+                "soy",
+                "eres",
+                "es",
+                "somos",
+                "sois",
+                "son",
+                "fui",
+                "fuiste",
+                "fue",
+                "fuimos",
+                "fuisteis",
+                "fueron",
+                "soy",
+                "eres",
+                "es",
+                "sois",
+                "era",
+                "eras",
+                "éramos",
+                "erais",
+                "eran",
+                "he",
+                "has",
+                "ha",
+                "hemos",
+                "habéis",
+                "han",
+                "hago",
+                "haces",
+                "hace",
+                "hacemos",
+                "hacéis",
+                "hacen",
+                "haré",
+                "harás",
+                "hará",
+                "haremos",
+                "haréis",
+                "harán",
+                "puedo",
+                "puedes",
+                "puede",
+                "podemos",
+                "podéis",
+                "pueden",
+                "puede",
+                "podrás",
+                "podrá",
+                "podremos",
+                "podréis",
+                "podrán",
+                "debo",
+                "debes",
+                "debe",
+                "debemos",
+                "debéis",
+                "deben",
+                "debe",
+                "deberás",
+                "deberá",
+                "deberemos",
+                "deberéis",
+                "deberán",
+                "puede",
+                "podría",
+                "podrías",
+                "podríamos",
+                "podríais",
+                "podrían",
+                "mis",
+                "para",
+                "un"
+                /* Note: You can customize the list further with additional filler words */
+            )
+
+
+            // Extract relevant search terms from the description
             val searchTerms = description
                 .split(" ", ".", ",", "?", "!", "#")
                 .map { it.lowercase() }
@@ -577,6 +804,43 @@ class IgViewModel @Inject constructor(
         return posts.value.firstOrNull { it.postId == postId }
     }
 
+    /**
+     * Searches for posts that match the provided search term.
+     *
+     * This function performs the following steps:
+     *
+     * 1. Checks if the provided search term is not empty.
+     * 2. Sets `searchedPostsProgress` to true to indicate the search process has started.
+     * 3. Queries the Firestore database to find posts containing the provided search term.
+     * 4. Converts the query result into a list of PostData objects using the `convertPosts` function.
+     * 5. Sets `searchedPostsProgress` to false to indicate the search process is complete.
+     *
+     * @param searchTerm The search term to match against post descriptions.
+     */
+    fun searchPosts(searchTerm: String) {
+        // Check if the provided search term is not empty
+        if (searchTerm.isNotEmpty()) {
+            // Set `searchedPostsProgress` to true to indicate the search process has started
+            searchedPostsProgress.value = true
+
+            // Query the Firestore database to find posts containing the provided search term
+            db.collection(POSTS)
+                .whereArrayContains("searchTerms", searchTerm.trim().lowercase())
+                .get()
+                .addOnSuccessListener { querySnapshot ->
+                    // Convert the query result into a list of PostData objects using the `convertPosts` function
+                    convertPosts(querySnapshot, searchedPosts)
+
+                    // Set `searchedPostsProgress` to false to indicate the search process is complete
+                    searchedPostsProgress.value = false
+                }
+                .addOnFailureListener { exc ->
+                    // Handle failure by handling the exception, resetting `searchedPostsProgress`, and displaying an error message
+                    handleException(exc, "Cannot search posts")
+                    searchedPostsProgress.value = false
+                }
+        }
+    }
 
 
 }
