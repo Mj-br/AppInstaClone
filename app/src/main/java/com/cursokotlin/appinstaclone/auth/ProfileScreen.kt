@@ -74,7 +74,8 @@ fun ProfileScreen(navController: NavController, vm: IgViewModel) {
             onLogout = {
                 vm.onLogout()
                 navigateTo(navController, DestinationScreen.Login)
-            }
+            },
+            navController = navController
         )
     }
 }
@@ -107,6 +108,7 @@ fun ProfileContent(
     onSave: () -> Unit,
     onBack: () -> Unit,
     onLogout: () -> Unit,
+    navController: NavController
 ) {
     // Remember the scroll state for the column
     val scrollState = rememberScrollState()
@@ -127,7 +129,12 @@ fun ProfileContent(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(text = "Back", modifier = Modifier.clickable { onBack.invoke() })
-            Text(text = "Save", modifier = Modifier.clickable { onSave.invoke() })
+            Text(text = "Save", modifier = Modifier.clickable {
+                onSave.invoke()
+                navigateTo(navController, DestinationScreen.MyPosts)
+                }
+            )
+
         }
 
         // Divider
