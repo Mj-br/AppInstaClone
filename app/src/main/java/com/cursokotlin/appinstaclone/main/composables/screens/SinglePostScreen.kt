@@ -78,6 +78,7 @@ fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostD
                 .padding(start = 4.dp, top = 0.dp, bottom = 0.dp, end = 4.dp)
                 .size(32.dp)
         )
+
         Text(text = post.username ?: "")
         Text(text = ".", modifier = Modifier.padding(8.dp))
 
