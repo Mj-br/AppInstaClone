@@ -457,6 +457,13 @@ class IgViewModel @Inject constructor(
             // Generate a unique post UUID
             val postUuid = UUID.randomUUID().toString()
 
+            val fillerWords = listOf("the", "be", "to", "is", "of", "and", "or", "a", "in", "it")
+            val searchTerms = description
+                .split(" ", ".", ",", "?", "!", "#")
+                .map { it.lowercase() }
+                .filter { it.isNotEmpty() and !fillerWords.contains(it) }
+
+
             // Create a new PostData object with the provided information
             val post = PostData(
                 postId = postUuid,
@@ -466,7 +473,8 @@ class IgViewModel @Inject constructor(
                 postImage = imageUri.toString(),
                 postDescription = description,
                 time = System.currentTimeMillis(),
-                likes = listOf<String>()
+                likes = listOf<String>(),
+                searchTerms = searchTerms
             )
 
             // Save the post data to the Firestore database
