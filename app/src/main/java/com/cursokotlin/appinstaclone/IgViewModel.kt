@@ -8,6 +8,7 @@ import com.cursokotlin.appinstaclone.data.Event
 import com.cursokotlin.appinstaclone.data.PostData
 import com.cursokotlin.appinstaclone.data.UserData
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.toObject
@@ -336,8 +337,52 @@ class IgViewModel @Inject constructor(
         uploadImage(uri) { imageUrl ->
             // When the image upload is successful, update the user's profile with the image URL
             createOrUpdateProfile(imageUrl = imageUrl.toString())
+            // Update user image data for their posts
+            updatePostUserImageData(imageUrl.toString())
         }
     }
+
+    /**
+     * Updates the user image data for the posts created by the current user.
+     *
+     * This function retrieves all posts created by the current user, updates their user image
+     * references with the provided [imageUrl], and refreshes the posts to reflect the changes.
+     *
+     * @param imageUrl The URL of the user's updated profile image.
+     */
+    private fun updatePostUserImageData(imageUrl: String) {
+        // Get the current user's UID
+        val currentUid = auth.currentUser?.uid
+
+        // Query posts where the user ID matches the current user's UID
+        db.collection(POSTS).whereEqualTo("userId", currentUid).get()
+            .addOnSuccessListener { querySnapshot ->
+                val posts = mutableStateOf<List<PostData>>(arrayListOf())
+                // Convert query results to a list of PostData
+                convertPosts(querySnapshot, posts)
+
+                val refs = arrayListOf<DocumentReference>()
+                for (post in posts.value) {
+                    post.postId?.let { id ->
+                        refs.add(db.collection(POSTS).document(id))
+                    }
+                }
+
+                // If there are posts to update, perform a batch update to set the userImage field
+                if (refs.isNotEmpty()) {
+                    db.runBatch { batch ->
+                        for (ref in refs) {
+                            batch.update(ref, "userImage", imageUrl)
+                        }
+                    }
+                        .addOnSuccessListener {
+                            // Refresh the posts to reflect the updated user image
+                            refreshPosts()
+                        }
+                }
+            }
+    }
+
 
     /**
      * Logs the user out of the application.
@@ -420,7 +465,8 @@ class IgViewModel @Inject constructor(
                 userImage = currentUserImage,
                 postImage = imageUri.toString(),
                 postDescription = description,
-                time = System.currentTimeMillis()
+                time = System.currentTimeMillis(),
+                likes = listOf<String>()
             )
 
             // Save the post data to the Firestore database
