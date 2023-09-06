@@ -564,6 +564,7 @@ class IgViewModel @Inject constructor(
                 "till",
                 "via",
                 "worth",
+                "-",
 
                 // Spanish Filler Words
                 "en",
@@ -679,7 +680,8 @@ class IgViewModel @Inject constructor(
                 "podrían",
                 "mis",
                 "para",
-                "un"
+                "un",
+                "s"
                 /* Note: You can customize the list further with additional filler words */
             )
 
