@@ -73,7 +73,7 @@ fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostD
         verticalAlignment = Alignment.CenterVertically
     ) {
         UserImageCard(
-            userImage = post.userImage, //We can change this for userData?.imageUrlg
+            userImage = post.userImage, //We can change this for userData?.imageUrl
             modifier = Modifier
                 .padding(start = 4.dp, top = 0.dp, bottom = 0.dp, end = 4.dp)
                 .size(32.dp)

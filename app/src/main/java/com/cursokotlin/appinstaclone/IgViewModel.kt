@@ -39,6 +39,9 @@ class IgViewModel @Inject constructor(
     val searchedPosts = mutableStateOf<List<PostData>>(listOf())
     val searchedPostsProgress = mutableStateOf(false)
 
+    val postsFeed = mutableStateOf<List<PostData>>(listOf())
+    val postsFeedProgress = mutableStateOf(false)
+
 
     init {
 //        auth.signOut()
@@ -238,6 +241,11 @@ class IgViewModel @Inject constructor(
                 /* Indicate that the operation is complete */
                 inProgress.value = false
 
+                /* Refresh userData posts */
+                refreshPosts()
+
+                getPersonalizedFeed()
+
                 /* Show a notification to indicate that user data was successfully retrieved */
 //                popupNotification.value = Event("User data retrieved successfully")
             }
@@ -408,6 +416,9 @@ class IgViewModel @Inject constructor(
 
         //Clear the searched list
         searchedPosts.value = listOf()
+
+        //Clear postsFeed value
+        postsFeed.value = listOf()
 
     }
 
@@ -848,15 +859,15 @@ class IgViewModel @Inject constructor(
         }
     }
 
-    fun onFollowClick(userId: String){
-        auth.currentUser?.uid?.let {currentUser->
+    fun onFollowClick(userId: String) {
+        auth.currentUser?.uid?.let { currentUser ->
             val following = arrayListOf<String>()
             userData.value?.following?.let {
                 following.addAll(it)
             }
-            if (following.contains(userId)){
+            if (following.contains(userId)) {
                 following.remove(userId)
-            }else{
+            } else {
                 following.add(userId)
             }
             db.collection(USERS).document(currentUser).update("following", following)
@@ -865,5 +876,74 @@ class IgViewModel @Inject constructor(
                 }
         }
     }
+
+    /**
+     * Retrieves a personalized feed of posts based on the users that the current user is following.
+     * If the user is not following anyone or no posts are found, it falls back to retrieving a general feed.
+     */
+    fun getPersonalizedFeed() {
+        // Set `postsFeedProgress` to true to indicate the feed retrieval process has started
+        postsFeedProgress.value = true
+
+        // Retrieve the list of users that the current user is following
+        val following = userData.value?.following
+
+        if (!following.isNullOrEmpty()) {
+            // Query the Firestore database to find posts by users the current user is following
+            db.collection(POSTS).whereIn("userId", following)
+                .get()
+                .addOnSuccessListener { querySnapshot ->
+                    // Convert the query result into a list of PostData objects using the `convertPosts` function
+                    convertPosts(querySnapshot, postsFeed)
+
+                    if (postsFeed.value.isEmpty()) {
+                        // If no posts are found, fall back to retrieving a general feed
+                        getGeneralFeed()
+                    } else {
+                        // Set `postsFeedProgress` to false to indicate the feed retrieval process is complete
+                        postsFeedProgress.value = false
+                    }
+                }
+                .addOnFailureListener { exc ->
+                    // Handle failure by handling the exception, resetting `postsFeedProgress`, and displaying an error message
+                    handleException(exc, "Cannot get personalized feed")
+                    postsFeedProgress.value = false
+                }
+        } else {
+            // If the user is not following anyone, fall back to retrieving a general feed
+            getGeneralFeed()
+        }
+    }
+
+    /**
+     * Retrieves a general feed of posts based on the posts created within the last 24 hours.
+     */
+    private fun getGeneralFeed() {
+        // Set `postsFeedProgress` to true to indicate the feed retrieval process has started
+        postsFeedProgress.value = true
+
+        // Calculate the current time in milliseconds
+        val currentTime = System.currentTimeMillis()
+
+        // Define the time difference to consider (1 day in milliseconds)
+        val difference = 24 * 60 * 60 * 1000
+
+        // Query the Firestore database to find posts created within the last 24 hours
+        db.collection(POSTS).whereGreaterThan("time", currentTime - difference)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                // Convert the query result into a list of PostData objects using the `convertPosts` function
+                convertPosts(querySnapshot, postsFeed)
+
+                // Set `postsFeedProgress` to false to indicate the feed retrieval process is complete
+                postsFeedProgress.value = false
+            }
+            .addOnFailureListener { exc ->
+                // Handle failure by handling the exception, resetting `postsFeedProgress`, and displaying an error message
+                handleException(exc, "Cannot get feed")
+                postsFeedProgress.value = false
+            }
+    }
+
 
 }
