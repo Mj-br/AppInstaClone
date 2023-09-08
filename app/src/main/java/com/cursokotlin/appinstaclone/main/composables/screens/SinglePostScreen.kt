@@ -84,14 +84,13 @@ fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostD
 
         if (userData?.userId == post.userId) {
             // Current user's post. Don't show anything
-        } else {
+        } else if (userData?.following?.contains(post.userId) == true) {
             Text(
-                text = "Follow",
-                color = Color.Blue,
-                modifier = Modifier.clickable {
-                    // Follow a user
-                }
-            )
+                text = "Following",
+                color = Color.Gray,
+                modifier = Modifier.clickable { vm.onFollowClick(post.userId!!) })
+        } else {
+            Text(text = "Follow", color = Color.Blue, modifier = Modifier.clickable { vm.onFollowClick(post.userId!!) })
         }
     }
 
@@ -126,7 +125,7 @@ fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostD
         Text(text = post.postDescription ?: "", modifier = Modifier.padding(start = 8.dp))
     }
 
-    Row(modifier = Modifier.padding(4.dp)){
+    Row(modifier = Modifier.padding(4.dp)) {
         Text(text = "10 comments", color = Color.Gray)
     }
 }

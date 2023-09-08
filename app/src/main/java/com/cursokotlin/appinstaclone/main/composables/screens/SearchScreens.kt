@@ -30,12 +30,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.cursokotlin.appinstaclone.DestinationScreen
 import com.cursokotlin.appinstaclone.IgViewModel
+import com.cursokotlin.appinstaclone.data.PostData
 import com.cursokotlin.appinstaclone.main.composables.BottomNavigationItem
 import com.cursokotlin.appinstaclone.main.composables.BottomNavigationMenu
 import com.cursokotlin.appinstaclone.main.composables.navigateTo
 
 @Composable
 fun SearchScreen(navController: NavController, vm: IgViewModel) {
+
 
     val searchedPostsLoading = vm.searchedPostsProgress.value
     val searchedPosts = vm.searchedPosts.value
@@ -56,11 +58,11 @@ fun SearchScreen(navController: NavController, vm: IgViewModel) {
                 .weight(1f)
                 .fillMaxWidth()
                 .padding(8.dp)
-        ) { post ->
+        ) {
             navigateTo(
                 navController = navController,
                 dest = DestinationScreen.SinglePost,
-                parameter = post
+                parameter = it
             )
         }
         BottomNavigationMenu(
