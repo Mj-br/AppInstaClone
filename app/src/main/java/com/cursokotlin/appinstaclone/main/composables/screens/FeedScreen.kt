@@ -48,7 +48,7 @@ fun FeedScreen(navController: NavController, vm: IgViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(color = Color.LightGray)
+            .background(color = Color.White)
     ) {
         Row(
             modifier = Modifier
@@ -119,7 +119,8 @@ fun Post(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .height(50.dp)
+                    .background(color = Color.White),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Card(
