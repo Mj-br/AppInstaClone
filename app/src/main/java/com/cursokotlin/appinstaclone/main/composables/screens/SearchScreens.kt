@@ -35,21 +35,30 @@ import com.cursokotlin.appinstaclone.main.composables.BottomNavigationItem
 import com.cursokotlin.appinstaclone.main.composables.BottomNavigationMenu
 import com.cursokotlin.appinstaclone.main.composables.navigateTo
 
+/**
+ * Display the search screen.
+ *
+ * This composable function displays a search bar, a list of searched posts, and a bottom navigation menu.
+ *
+ * @param navController The NavController for navigation.
+ * @param vm The view model containing relevant data.
+ */
 @Composable
 fun SearchScreen(navController: NavController, vm: IgViewModel) {
-
-
+    // Get data from the view model
     val searchedPostsLoading = vm.searchedPostsProgress.value
     val searchedPosts = vm.searchedPosts.value
     var searchTerm by rememberSaveable { mutableStateOf("") }
 
-
     Column {
+        // Display the search bar
         SearchBar(
             searchTerm = searchTerm,
             onSearchChange = { searchTerm = it },
             onSearch = { vm.searchPosts(searchTerm) }
         )
+
+        // Display the list of searched posts
         PostList(
             isContextLoading = false,
             postsLoading = searchedPostsLoading,
@@ -58,13 +67,16 @@ fun SearchScreen(navController: NavController, vm: IgViewModel) {
                 .weight(1f)
                 .fillMaxWidth()
                 .padding(8.dp)
-        ) {
+        ) { post ->
+            // Navigate to the SinglePostScreen when a post is clicked
             navigateTo(
                 navController = navController,
                 dest = DestinationScreen.SinglePost,
-                parameter = it
+                parameter = post
             )
         }
+
+        // Display the bottom navigation menu
         BottomNavigationMenu(
             selectedItem = BottomNavigationItem.SEARCH,
             navController = navController
@@ -72,6 +84,15 @@ fun SearchScreen(navController: NavController, vm: IgViewModel) {
     }
 }
 
+/**
+ * Display the search bar.
+ *
+ * This composable function displays a search bar where users can enter a search term.
+ *
+ * @param searchTerm The current search term.
+ * @param onSearchChange Callback to handle changes in the search term.
+ * @param onSearch Callback to handle the search action.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBar(searchTerm: String, onSearchChange: (String) -> Unit, onSearch: () -> Unit) {
@@ -109,6 +130,7 @@ fun SearchBar(searchTerm: String, onSearchChange: (String) -> Unit, onSearch: ()
                 onSearch()
                 focusManager.clearFocus()
             }) {
+                // Search icon
                 Icon(imageVector = Icons.Filled.Search, contentDescription = null)
             }
         }

@@ -1,12 +1,10 @@
 package com.cursokotlin.appinstaclone.main.composables.screens
 
-import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,24 +24,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.cursokotlin.appinstaclone.IgViewModel
+import com.cursokotlin.appinstaclone.R
 import com.cursokotlin.appinstaclone.data.PostData
 import com.cursokotlin.appinstaclone.main.composables.CommonDivider
 import com.cursokotlin.appinstaclone.main.composables.CommonImage
 import com.cursokotlin.appinstaclone.main.composables.UserImageCard
-import com.cursokotlin.appinstaclone.R
 
+/**
+ * Display a single post.
+ *
+ * This composable function is responsible for displaying a single post, including the user's
+ * profile image, post image, likes, and comments.
+ *
+ * @param navController The NavController for navigation.
+ * @param vm The view model containing relevant data.
+ * @param post The post data to display.
+ */
 @Composable
 fun SinglePostScreen(
     navController: NavController,
     vm: IgViewModel,
     post: PostData?
 ) {
+    // Check if the post data is available
     post?.userId?.let {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(8.dp)
         ) {
+            // Back button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -57,15 +67,28 @@ fun SinglePostScreen(
 
             CommonDivider()
 
+            // Display the single post
             SinglePostDisplay(navController = navController, vm = vm, post = post)
         }
     }
 }
 
+/**
+ * Display the content of a single post.
+ *
+ * This composable function displays the user's profile image, username, follow button,
+ * post image, likes, and post description.
+ *
+ * @param navController The NavController for navigation.
+ * @param vm The view model containing relevant data.
+ * @param post The post data to display.
+ */
 @Composable
 fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostData) {
+    // Get user data from the view model
     val userData = vm.userData.value
 
+    // Display user image, username, and follow button
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -73,7 +96,7 @@ fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostD
         verticalAlignment = Alignment.CenterVertically
     ) {
         UserImageCard(
-            userImage = post.userImage, //We can change this for userData?.imageUrl
+            userImage = post.userImage, // We can change this for userData?.imageUrl
             modifier = Modifier
                 .padding(start = 4.dp, top = 0.dp, bottom = 0.dp, end = 4.dp)
                 .size(32.dp)
@@ -94,6 +117,7 @@ fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostD
         }
     }
 
+    // Display the post image
     Box {
         val modifier = Modifier
             .fillMaxWidth()
@@ -107,6 +131,7 @@ fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostD
         )
     }
 
+    // Display likes count
     Row(
         modifier = Modifier.padding(4.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -120,12 +145,15 @@ fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostD
         Text(text = "${post.likes?.size ?: 0} likes", modifier = Modifier.padding(start = 4.dp))
     }
 
+    // Display username and post description
     Row(modifier = Modifier.padding(start = 4.dp, top = 0.dp, bottom = 0.dp, end = 4.dp)) {
         Text(text = post.username ?: "", fontWeight = FontWeight.Bold)
         Text(text = post.postDescription ?: "", modifier = Modifier.padding(start = 8.dp))
     }
 
+    // Display comments count
     Row(modifier = Modifier.padding(4.dp)) {
         Text(text = "10 comments", color = Color.Gray)
     }
 }
+
