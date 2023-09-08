@@ -42,6 +42,7 @@ import com.cursokotlin.appinstaclone.main.composables.navigateTo
  *
  * @param navController The NavController for navigation.
  * @param vm The view model containing relevant data.
+ * 
  */
 @Composable
 fun SearchScreen(navController: NavController, vm: IgViewModel) {
