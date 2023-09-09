@@ -58,6 +58,7 @@ class IgViewModel @Inject constructor(
 
             // Refresh the user's posts
             refreshPosts()
+
         }
     }
 
@@ -759,6 +760,7 @@ class IgViewModel @Inject constructor(
      * 6. On failure, handles the exception and sets refreshPostsProgress to false.
      * 7. If the current UID is not available, handles the case where the username is unavailable and logs the user out.
      */
+
     private fun refreshPosts() {
         val currentUid = auth.currentUser?.uid
         if (currentUid != null) {
