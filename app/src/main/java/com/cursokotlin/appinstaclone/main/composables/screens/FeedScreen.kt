@@ -1,6 +1,7 @@
 package com.cursokotlin.appinstaclone.main.composables.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,10 +19,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -32,8 +37,14 @@ import com.cursokotlin.appinstaclone.main.composables.BottomNavigationItem
 import com.cursokotlin.appinstaclone.main.composables.BottomNavigationMenu
 import com.cursokotlin.appinstaclone.main.composables.CommonImage
 import com.cursokotlin.appinstaclone.main.composables.CommonProgressSpinner
+import com.cursokotlin.appinstaclone.main.composables.LikeAnimation
 import com.cursokotlin.appinstaclone.main.composables.UserImageCard
 import com.cursokotlin.appinstaclone.main.composables.navigateTo
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import okhttp3.Dispatcher
 
 @Composable
 fun FeedScreen(navController: NavController, vm: IgViewModel) {
@@ -89,7 +100,7 @@ fun PostsList(
         LazyColumn {
             items(items = posts) { postData ->
                 Post(post = postData, currentUserId = currentUserId, vm = vm) {
-                    navigateTo(navController, DestinationScreen.SinglePost, it /*TODO:Look out*/)
+                    navigateTo(navController, DestinationScreen.SinglePost, postData.postId/*TODO:Look out*/)
 
                 }
             }
@@ -104,8 +115,10 @@ fun Post(
     post: PostData,
     currentUserId: String,
     vm: IgViewModel,
-    onPostClick: (String) /*TODO:Look out*/ -> Unit
+    onPostClick: () /*TODO:Look out*/ -> Unit
 ) {
+    val likeAnimation = remember { mutableStateOf(false) }
+    val dislikeAnimation = remember { mutableStateOf(false) }
     Card(
         shape = RoundedCornerShape(corner = CornerSize(4.dp)),
         modifier = Modifier
@@ -136,20 +149,60 @@ fun Post(
 
             }
 
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
-               /* val modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 150.dp)*/
-
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 val modifier = Modifier
                     .fillMaxWidth()
                     .scale(1.04f)
                     .padding(top = 8.dp, bottom = 8.dp)
                     .height(400.dp)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onDoubleTap = {
+                                if (post.likes?.contains(currentUserId) == true) {
+                                    // Toggle dislikeAnimation if already liked
+                                    dislikeAnimation.value = !dislikeAnimation.value
+                                } else {
+                                    // Toggle likeAnimation if not liked
+                                    likeAnimation.value = !likeAnimation.value
+                                }
+                                vm.onLikePost(post)
+                            },
+                            onTap = {
+                                onPostClick.invoke()
+                            }
+                        )
+                    }
+
                 CommonImage(
                     data = post.postImage,
                     modifier = modifier,
-                    contentScale = ContentScale.Crop //FillWidth
+                    contentScale = ContentScale.Crop
                 )
+
+                // Use LaunchedEffect for likeAnimation
+                LaunchedEffect(likeAnimation.value) {
+                    if (likeAnimation.value) {
+                        delay(1000L)
+                        likeAnimation.value = false
+                    }
+                }
+
+                // Reset dislikeAnimation when it's done
+                if (dislikeAnimation.value) {
+                    LaunchedEffect(dislikeAnimation.value) {
+                        delay(1000L)
+                        dislikeAnimation.value = false
+                    }
+                }
+
+                // Show LikeAnimation for like and DislikeAnimation for dislike
+                if (likeAnimation.value) {
+                    LikeAnimation()
+                } else if (dislikeAnimation.value) {
+                    LikeAnimation(false)
+                }
             }
+
 
         }
     }
