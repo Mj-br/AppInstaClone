@@ -2,6 +2,7 @@ package com.cursokotlin.appinstaclone.main.composables.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -46,29 +47,41 @@ fun SinglePostScreen(
     vm: IgViewModel,
     post: PostData?
 ) {
-    // Check if the post data is available
-    post?.userId?.let {
+    if (post == null){
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Back button
-            Row(
+            Text(text = "Could not found postData", fontWeight = FontWeight.Bold)
+        }
+    }else{
+        // Check if the post data is available
+        post?.userId?.let {//TODO: I have an ERROR here because im receiving a null, because of that the screen does not appear
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
+                    .fillMaxSize()
+                    .padding(8.dp)
             ) {
-                Text(
-                    text = "Back",
-                    modifier = Modifier.clickable { navController.popBackStack() }
-                )
+                // Back button
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                ) {
+                    Text(
+                        text = "Back",
+                        modifier = Modifier.clickable { navController.popBackStack() }
+                    )
+                }
+
+                CommonDivider()
+
+                // Display the single post
+                SinglePostDisplay(navController = navController, vm = vm, post = post)
             }
-
-            CommonDivider()
-
-            // Display the single post
-            SinglePostDisplay(navController = navController, vm = vm, post = post)
         }
     }
 }

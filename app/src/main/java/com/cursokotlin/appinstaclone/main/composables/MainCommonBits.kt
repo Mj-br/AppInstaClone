@@ -260,7 +260,7 @@ fun LikeAnimation(like: Boolean = true) {
     }
 
     Image(
-        painter = painterResource(id = if (like) R.drawable.ic_like else R.drawable.ic_dislike),
+        painter = painterResource(id = if (like) R.drawable.ic_like else R.drawable.ic_like),
         contentDescription = null,
         modifier = Modifier.size(size = size),
         colorFilter = ColorFilter.tint(if (like) Color.Red else Color.Gray)
