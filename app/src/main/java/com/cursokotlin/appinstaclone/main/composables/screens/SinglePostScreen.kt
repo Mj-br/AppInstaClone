@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -24,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.cursokotlin.appinstaclone.DestinationScreen
 import com.cursokotlin.appinstaclone.IgViewModel
 import com.cursokotlin.appinstaclone.R
 import com.cursokotlin.appinstaclone.data.PostData
@@ -47,6 +49,13 @@ fun SinglePostScreen(
     vm: IgViewModel,
     post: PostData?
 ) {
+
+    val comments = vm.comments.value
+
+    LaunchedEffect(key1 = Unit) {
+        vm.getComments(post?.postId)
+    }
+
     if (post == null) {
         Column(
             modifier = Modifier
@@ -80,7 +89,7 @@ fun SinglePostScreen(
                 CommonDivider()
 
                 // Display the single post
-                SinglePostDisplay(navController = navController, vm = vm, post = post)
+                SinglePostDisplay(navController = navController, vm = vm, post = post, numberComments = comments.size)
             }
         }
     }
@@ -97,7 +106,7 @@ fun SinglePostScreen(
  * @param post The post data to display.
  */
 @Composable
-fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostData) {
+fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostData, numberComments: Int) {
     // Get user data from the view model
     val userData = vm.userData.value
 
@@ -169,7 +178,15 @@ fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostD
 
     // Display comments count
     Row(modifier = Modifier.padding(4.dp)) {
-        Text(text = "10 comments", color = Color.Gray)
+        Text(text = "$numberComments", color = Color.Gray,
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .clickable {
+                    post.postId?.let {
+                        navController.navigate(DestinationScreen.CommentsScreen.createRoute(it))
+                    }
+                })
+
     }
 }
 

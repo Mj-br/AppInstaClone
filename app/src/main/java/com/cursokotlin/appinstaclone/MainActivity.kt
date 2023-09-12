@@ -19,6 +19,7 @@ import com.cursokotlin.appinstaclone.auth.SingUpScreen
 import com.cursokotlin.appinstaclone.data.PostData
 import com.cursokotlin.appinstaclone.main.composables.screens.FeedScreen
 import com.cursokotlin.appinstaclone.main.composables.NotificationMessage
+import com.cursokotlin.appinstaclone.main.composables.screens.CommentsScreen
 import com.cursokotlin.appinstaclone.main.composables.screens.MyPostsScreen
 import com.cursokotlin.appinstaclone.main.composables.screens.NewPostsScreen
 import com.cursokotlin.appinstaclone.main.composables.screens.SearchScreen
@@ -55,6 +56,10 @@ sealed class DestinationScreen(val route: String) {
         fun createRoute(uri: String) = "newpost/$uri"
     }
     object SinglePost : DestinationScreen("singlepost")
+
+    object CommentsScreen : DestinationScreen("comments/{postId}"){
+        fun createRoute(postId: String) = "comments/$postId"
+    }
 }
 
 @Composable
@@ -90,6 +95,7 @@ fun InstagramApp() {
 
         composable(DestinationScreen.NewPost.route) { navBackStackEntry ->
             val imageUri = navBackStackEntry.arguments?.getString("imageUri")
+
             imageUri?.let { imageUri ->
                 NewPostsScreen(navController = navController, vm = vm, encodeUri = imageUri)
             }
@@ -97,11 +103,22 @@ fun InstagramApp() {
 
         composable(DestinationScreen.SinglePost.route + "/{postId}") { backStackEntry ->
             val postId = backStackEntry.arguments?.getString("postId")
+
             postId?.let { id ->
                 val post = vm.getPostById(id)
                 SinglePostScreen(navController = navController, vm = vm, post = post)
             }
         }
+
+        composable(DestinationScreen.CommentsScreen.route){ navBackStackEntry ->
+            val postId = navBackStackEntry.arguments?.getString("postId")
+
+            postId?.let{
+                CommentsScreen(navController = navController, vm = vm, postId = it)
+            }
+        }
+
+
 
 
     }

@@ -1,9 +1,11 @@
 package com.cursokotlin.appinstaclone
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.cursokotlin.appinstaclone.data.CommentData
 import com.cursokotlin.appinstaclone.data.Event
 import com.cursokotlin.appinstaclone.data.PostData
 import com.cursokotlin.appinstaclone.data.UserData
@@ -20,6 +22,8 @@ import javax.inject.Inject
 
 const val USERS = "users"
 const val POSTS = "posts"
+const val COMMENTS = "comments"
+
 
 @HiltViewModel
 class IgViewModel @Inject constructor(
@@ -41,6 +45,9 @@ class IgViewModel @Inject constructor(
 
     val postsFeed = mutableStateOf<List<PostData>>(listOf())
     val postsFeedProgress = mutableStateOf(false)
+
+    val comments = mutableStateOf<List<CommentData>>(listOf())
+    val commentsProgress = mutableStateOf(false)
 
 
     init {
@@ -420,6 +427,9 @@ class IgViewModel @Inject constructor(
 
         //Clear postsFeed value
         postsFeed.value = listOf()
+
+        // Clear the comments data
+        comments.value = listOf()
 
     }
 
@@ -817,9 +827,11 @@ class IgViewModel @Inject constructor(
      * @return The [PostData] object with the matching [postId], or null if not found.
      */
     fun getPostById(postId: String): PostData? {
+
         // Use the 'firstOrNull' function to find the first post with a matching 'postId'
         // in the list of posts ('posts.value').
         // If a matching post is found, it is returned; otherwise, 'null' is returned.
+        Log.d("manu", posts.value.toString())
         return posts.value.firstOrNull { it.postId == postId }
     }
 
@@ -968,6 +980,46 @@ class IgViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun createComment(postId: String, text: String){
+        userData.value?.username?.let {username ->
+            val commentId = UUID.randomUUID().toString()
+            val comment = CommentData(
+                commentId = commentId,
+                postId = postId,
+                username = username,
+                text = text,
+                timestamp = System.currentTimeMillis()
+            )
+            db.collection(COMMENTS).document(commentId).set(comment)
+                .addOnSuccessListener {
+                    getComments(postId)
+                }
+                .addOnFailureListener{ exc ->
+                    handleException(exc, "Cannot create comment")
+                }
+
+        }
+    }
+
+    fun getComments(postId: String?) {
+        commentsProgress.value = true
+        db.collection(COMMENTS).whereEqualTo("postId", postId).get()
+            .addOnSuccessListener { documents ->
+                val newComments = mutableListOf<CommentData>()
+                documents.forEach { doc ->
+                    val comment = doc.toObject<CommentData>()
+                    newComments.add(comment)
+                }
+                val sortedComments = newComments.sortedByDescending { it.timestamp }
+                comments.value = sortedComments
+                commentsProgress.value = false
+            }
+            .addOnFailureListener { exc ->
+                handleException(exc, "Cannot retrieve comments")
+                commentsProgress.value = false
+            }
     }
 
 }
