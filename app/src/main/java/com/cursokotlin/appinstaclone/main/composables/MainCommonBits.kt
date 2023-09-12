@@ -114,6 +114,8 @@ private fun buildRoute(dest: DestinationScreen, parameter: String? = null): Stri
     }
 }
 
+//TODO: TRYING PARCEALABLE
+
 
 /**
  * Checks if a user is signed in and, if so, navigates to the Feed screen.

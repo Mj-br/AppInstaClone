@@ -883,7 +883,7 @@ class IgViewModel @Inject constructor(
      * Retrieves a personalized feed of posts based on the users that the current user is following.
      * If the user is not following anyone or no posts are found, it falls back to retrieving a general feed.
      */
-    fun getPersonalizedFeed() {
+    private fun getPersonalizedFeed() {
         // Set `postsFeedProgress` to true to indicate the feed retrieval process has started
         postsFeedProgress.value = true
 
@@ -971,3 +971,4 @@ class IgViewModel @Inject constructor(
     }
 
 }
+

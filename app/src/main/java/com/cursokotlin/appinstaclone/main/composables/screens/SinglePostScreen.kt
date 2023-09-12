@@ -47,7 +47,7 @@ fun SinglePostScreen(
     vm: IgViewModel,
     post: PostData?
 ) {
-    if (post == null){
+    if (post == null) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -57,7 +57,7 @@ fun SinglePostScreen(
         ) {
             Text(text = "Could not found postData", fontWeight = FontWeight.Bold)
         }
-    }else{
+    } else {
         // Check if the post data is available
         post?.userId?.let {//TODO: I have an ERROR here because im receiving a null, because of that the screen does not appear
             Column(
@@ -126,7 +126,10 @@ fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostD
                 color = Color.Gray,
                 modifier = Modifier.clickable { vm.onFollowClick(post.userId!!) })
         } else {
-            Text(text = "Follow", color = Color.Blue, modifier = Modifier.clickable { vm.onFollowClick(post.userId!!) })
+            Text(
+                text = "Follow",
+                color = Color.Blue,
+                modifier = Modifier.clickable { vm.onFollowClick(post.userId!!) })
         }
     }
 
