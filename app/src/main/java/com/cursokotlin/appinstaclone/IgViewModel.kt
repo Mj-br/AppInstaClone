@@ -16,9 +16,13 @@ import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.tasks.await
 import java.lang.Exception
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 const val USERS = "users"
 const val POSTS = "posts"
@@ -806,34 +810,79 @@ class IgViewModel @Inject constructor(
      * @param documents The Firestore query results.
      * @param outState A mutable state that holds the list of posts to be updated.
      */
-    private fun convertPosts(documents: QuerySnapshot, outState: MutableState<List<PostData>>) {
+    private fun convertPosts(querySnapshot: QuerySnapshot, outState: MutableState<List<PostData>>) {
         val newPosts = mutableListOf<PostData>()
-        documents.forEach { doc ->
-            val post = doc.toObject<PostData>()
+
+        querySnapshot.forEach { document ->
+            val post = document.toObject<PostData>()
             newPosts.add(post)
         }
 
-        // Sort the new posts by descending time
-        val sortedPosts = newPosts.sortedByDescending { it.time }
+        // Get the current list of posts
+        val currentPosts = outState.value.toMutableList()
+
+        // Update the existing posts with the new posts
+        newPosts.forEach { newPost ->
+            val index = currentPosts.indexOfFirst { it.postId == newPost.postId }
+            if (index != -1) {
+                currentPosts[index] = newPost
+            } else {
+                currentPosts.add(newPost)
+            }
+        }
+
+        // Sort the posts by descending time
+        val sortedPosts = currentPosts.sortedByDescending { it.time }
 
         // Update the post list in the app's state
         outState.value = sortedPosts
     }
 
+
     /**
-     * Retrieves a post with a specified [postId] from the list of posts.
+     * Retrieves a specific post by its postId.
+     *
+     * This function performs the following steps:
+     *
+     * 1. Fetches all posts using a separate coroutine.
+     * 2. Filters the list to find the post with the specified postId.
      *
      * @param postId The unique identifier of the post to retrieve.
-     * @return The [PostData] object with the matching [postId], or null if not found.
+     * @return The PostData object with the specified postId, or null if not found.
      */
-    fun getPostById(postId: String): PostData? {
+    suspend fun getPostById(postId: String): PostData? {
+        // Fetch all posts using a separate coroutine
+        val allPosts = getAllPosts()
 
-        // Use the 'firstOrNull' function to find the first post with a matching 'postId'
-        // in the list of posts ('posts.value').
-        // If a matching post is found, it is returned; otherwise, 'null' is returned.
-        Log.d("manu", posts.value.toString())
-        return posts.value.firstOrNull { it.postId == postId }
+        // Filter the list to find the post with the specified postId
+        return allPosts.firstOrNull { it.postId == postId }
     }
+
+    /**
+     * Retrieves a list of all posts from Firestore.
+     *
+     * This function performs the following steps:
+     *
+     * 1. Initiates a Firestore query to get all posts.
+     * 2. Converts the query result into a list of PostData objects using the `convertPosts` function.
+     *
+     * @return A list of all PostData objects retrieved from Firestore.
+     */
+    private suspend fun getAllPosts(): List<PostData> = suspendCoroutine { continuation ->
+        db.collection("posts")
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val postsList = querySnapshot.documents.mapNotNull { it.toObject<PostData>() }
+                continuation.resume(postsList)
+            }
+            .addOnFailureListener { exc ->
+                handleException(exc, "Error getting all posts")
+                continuation.resumeWithException(exc)
+            }
+    }
+
+
+
 
     /**
      * Searches for posts that match the provided search term.
@@ -982,8 +1031,8 @@ class IgViewModel @Inject constructor(
         }
     }
 
-    fun createComment(postId: String, text: String){
-        userData.value?.username?.let {username ->
+    fun createComment(postId: String, text: String) {
+        userData.value?.username?.let { username ->
             val commentId = UUID.randomUUID().toString()
             val comment = CommentData(
                 commentId = commentId,
@@ -996,7 +1045,7 @@ class IgViewModel @Inject constructor(
                 .addOnSuccessListener {
                     getComments(postId)
                 }
-                .addOnFailureListener{ exc ->
+                .addOnFailureListener { exc ->
                     handleException(exc, "Cannot create comment")
                 }
 
