@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -19,12 +21,14 @@ import com.cursokotlin.appinstaclone.auth.SingUpScreen
 import com.cursokotlin.appinstaclone.data.PostData
 import com.cursokotlin.appinstaclone.main.composables.screens.FeedScreen
 import com.cursokotlin.appinstaclone.main.composables.NotificationMessage
+import com.cursokotlin.appinstaclone.main.composables.screens.CommentsScreen
 import com.cursokotlin.appinstaclone.main.composables.screens.MyPostsScreen
 import com.cursokotlin.appinstaclone.main.composables.screens.NewPostsScreen
 import com.cursokotlin.appinstaclone.main.composables.screens.SearchScreen
 import com.cursokotlin.appinstaclone.main.composables.screens.SinglePostScreen
 import com.cursokotlin.appinstaclone.ui.theme.AppInstaCloneTheme
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.scopes.ViewModelScoped
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -55,6 +59,10 @@ sealed class DestinationScreen(val route: String) {
         fun createRoute(uri: String) = "newpost/$uri"
     }
     object SinglePost : DestinationScreen("singlepost")
+
+    object CommentsScreen : DestinationScreen("comments/{postId}"){
+        fun createRoute(postId: String) = "comments/$postId"
+    }
 }
 
 @Composable
@@ -90,6 +98,7 @@ fun InstagramApp() {
 
         composable(DestinationScreen.NewPost.route) { navBackStackEntry ->
             val imageUri = navBackStackEntry.arguments?.getString("imageUri")
+
             imageUri?.let { imageUri ->
                 NewPostsScreen(navController = navController, vm = vm, encodeUri = imageUri)
             }
@@ -97,11 +106,25 @@ fun InstagramApp() {
 
         composable(DestinationScreen.SinglePost.route + "/{postId}") { backStackEntry ->
             val postId = backStackEntry.arguments?.getString("postId")
-            postId?.let { id ->
-                val post = vm.getPostById(id)
-                SinglePostScreen(navController = navController, vm = vm, post = post)
+
+            val postState = produceState<PostData?>(initialValue = null) {
+                postId?.let { id ->
+                    value = vm.getPostById(id)
+                }
+            }
+
+            SinglePostScreen(navController = navController, vm = vm, post = postState.value)
+        }
+
+        composable(DestinationScreen.CommentsScreen.route){ navBackStackEntry ->
+            val postId = navBackStackEntry.arguments?.getString("postId")
+
+            postId?.let{
+                CommentsScreen(navController = navController, vm = vm, postId = it)
             }
         }
+
+
 
 
     }

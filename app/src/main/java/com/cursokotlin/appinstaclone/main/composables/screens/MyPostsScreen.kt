@@ -48,22 +48,8 @@ import com.cursokotlin.appinstaclone.main.composables.UserImageCard
 import com.cursokotlin.appinstaclone.main.composables.navigateTo
 
 data class PostBoxData(
-    var myPost: PostData? = null,
-//    var post2: PostData? = null,
-//    var post3: PostData? = null,
+    var myPost: PostData? = null
 )
-//{
-//    fun isFull() = myPost != null && post2 != null && post3 != null
-//    fun add(post: PostData) {
-//        if (myPost == null) {
-//            myPost = post
-//        } else if (post2 == null) {
-//            post2 = post
-//        } else if (post3 == null) {
-//            post3 = post
-//        }
-//    }
-//}
 
 @Composable
 fun MyPostsScreen(navController: NavController, vm: IgViewModel) {
@@ -164,10 +150,13 @@ fun MyPostsScreen(navController: NavController, vm: IgViewModel) {
                 isContextLoading = isLoading,
                 postsLoading = postsLoading,
                 posts = posts,
-                modifier = Modifier.weight(1f).padding(1.dp).fillMaxSize()
-            ) {postId ->
-               navigateTo(navController, dest = DestinationScreen.SinglePost, parameter = postId)
-                }
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(1.dp)
+                    .fillMaxSize()
+            ) { postId ->
+                navigateTo(navController, dest = DestinationScreen.SinglePost, parameter = postId)
+            }
         }
         BottomNavigationMenu(
             selectedItem = BottomNavigationItem.POSTS,

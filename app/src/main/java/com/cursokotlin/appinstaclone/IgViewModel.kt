@@ -1,9 +1,11 @@
 package com.cursokotlin.appinstaclone
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.cursokotlin.appinstaclone.data.CommentData
 import com.cursokotlin.appinstaclone.data.Event
 import com.cursokotlin.appinstaclone.data.PostData
 import com.cursokotlin.appinstaclone.data.UserData
@@ -14,12 +16,18 @@ import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.tasks.await
 import java.lang.Exception
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 const val USERS = "users"
 const val POSTS = "posts"
+const val COMMENTS = "comments"
+
 
 @HiltViewModel
 class IgViewModel @Inject constructor(
@@ -35,6 +43,15 @@ class IgViewModel @Inject constructor(
 
     val refreshPostsProgress = mutableStateOf(false)
     val posts = mutableStateOf<List<PostData>>(listOf())
+
+    val searchedPosts = mutableStateOf<List<PostData>>(listOf())
+    val searchedPostsProgress = mutableStateOf(false)
+
+    val postsFeed = mutableStateOf<List<PostData>>(listOf())
+    val postsFeedProgress = mutableStateOf(false)
+
+    val comments = mutableStateOf<List<CommentData>>(listOf())
+    val commentsProgress = mutableStateOf(false)
 
 
     init {
@@ -52,6 +69,7 @@ class IgViewModel @Inject constructor(
 
             // Refresh the user's posts
             refreshPosts()
+
         }
     }
 
@@ -235,6 +253,11 @@ class IgViewModel @Inject constructor(
                 /* Indicate that the operation is complete */
                 inProgress.value = false
 
+                /* Refresh userData posts */
+                refreshPosts()
+
+                getPersonalizedFeed()
+
                 /* Show a notification to indicate that user data was successfully retrieved */
 //                popupNotification.value = Event("User data retrieved successfully")
             }
@@ -402,6 +425,16 @@ class IgViewModel @Inject constructor(
 
         // Display a logout notification using an event
         popupNotification.value = Event("Logged out")
+
+        //Clear the searched list
+        searchedPosts.value = listOf()
+
+        //Clear postsFeed value
+        postsFeed.value = listOf()
+
+        // Clear the comments data
+        comments.value = listOf()
+
     }
 
     /**
@@ -442,6 +475,9 @@ class IgViewModel @Inject constructor(
      * @param imageUri The URI of the image to be posted.
      * @param description The description for the new post.
      * @param onPostSuccess A callback to execute when the post is successful.
+     *
+     * Additionally, this function performs keyword extraction from the post description:
+     *  - Splits the description into words and removes common filler words in both English and Spanish.
      */
     private fun onCreatePost(imageUri: Uri, description: String, onPostSuccess: () -> Unit) {
         // Set inProgress to true to indicate the post creation process has started
@@ -457,6 +493,236 @@ class IgViewModel @Inject constructor(
             // Generate a unique post UUID
             val postUuid = UUID.randomUUID().toString()
 
+            val fillerWords = listOf(
+                // English Filler Words
+                "the",
+                "be",
+                "to",
+                "is",
+                "of",
+                "and",
+                "or",
+                "a",
+                "in",
+                "it",
+                "I",
+                "you",
+                "he",
+                "she",
+                "we",
+                "they",
+                "my",
+                "your",
+                "his",
+                "her",
+                "its",
+                "our",
+                "their",
+                "mine",
+                "yours",
+                "hers",
+                "ours",
+                "theirs",
+                "this",
+                "that",
+                "these",
+                "those",
+                "am",
+                "are",
+                "was",
+                "were",
+                "have",
+                "has",
+                "had",
+                "do",
+                "does",
+                "did",
+                "can",
+                "could",
+                "will",
+                "would",
+                "shall",
+                "should",
+                "may",
+                "might",
+                "must",
+                "of",
+                "off",
+                "by",
+                "for",
+                "with",
+                "about",
+                "against",
+                "between",
+                "into",
+                "through",
+                "during",
+                "before",
+                "after",
+                "above",
+                "below",
+                "under",
+                "over",
+                "around",
+                "throughout",
+                "up",
+                "down",
+                "upon",
+                "toward",
+                "against",
+                "aboard",
+                "along",
+                "amid",
+                "among",
+                "beside",
+                "between",
+                "beyond",
+                "concerning",
+                "considering",
+                "despite",
+                "except",
+                "inside",
+                "outside",
+                "regarding",
+                "respecting",
+                "towards",
+                "beneath",
+                "betwixt",
+                "past",
+                "except",
+                "pending",
+                "till",
+                "via",
+                "worth",
+                "-",
+
+                // Spanish Filler Words
+                "en",
+                "el",
+                "la",
+                "las",
+                "a",
+                "es",
+                "de",
+                "y",
+                "o",
+                "lo",
+                "los",
+                "yo",
+                "tú",
+                "él",
+                "ella",
+                "nosotros",
+                "vosotros",
+                "ellos",
+                "ellas",
+                "mi",
+                "tu",
+                "su",
+                "nuestro",
+                "vuestro",
+                "suyo",
+                "mío",
+                "tuyo",
+                "nuestro",
+                "vuestro",
+                "suyo",
+                "este",
+                "ese",
+                "aquel",
+                "esta",
+                "esa",
+                "aquella",
+                "estos",
+                "esos",
+                "aquellos",
+                "estas",
+                "esas",
+                "aquellas",
+                "soy",
+                "eres",
+                "es",
+                "somos",
+                "sois",
+                "son",
+                "fui",
+                "fuiste",
+                "fue",
+                "fuimos",
+                "fuisteis",
+                "fueron",
+                "soy",
+                "eres",
+                "es",
+                "sois",
+                "era",
+                "eras",
+                "éramos",
+                "erais",
+                "eran",
+                "he",
+                "has",
+                "ha",
+                "hemos",
+                "habéis",
+                "han",
+                "hago",
+                "haces",
+                "hace",
+                "hacemos",
+                "hacéis",
+                "hacen",
+                "haré",
+                "harás",
+                "hará",
+                "haremos",
+                "haréis",
+                "harán",
+                "puedo",
+                "puedes",
+                "puede",
+                "podemos",
+                "podéis",
+                "pueden",
+                "puede",
+                "podrás",
+                "podrá",
+                "podremos",
+                "podréis",
+                "podrán",
+                "debo",
+                "debes",
+                "debe",
+                "debemos",
+                "debéis",
+                "deben",
+                "debe",
+                "deberás",
+                "deberá",
+                "deberemos",
+                "deberéis",
+                "deberán",
+                "puede",
+                "podría",
+                "podrías",
+                "podríamos",
+                "podríais",
+                "podrían",
+                "mis",
+                "para",
+                "un",
+                "s"
+                /* Note: You can customize the list further with additional filler words */
+            )
+
+
+            // Extract relevant search terms from the description
+            val searchTerms = description
+                .split(" ", ".", ",", "?", "!", "#")
+                .map { it.lowercase() }
+                .filter { it.isNotEmpty() and !fillerWords.contains(it) }
+
+
             // Create a new PostData object with the provided information
             val post = PostData(
                 postId = postUuid,
@@ -466,7 +732,8 @@ class IgViewModel @Inject constructor(
                 postImage = imageUri.toString(),
                 postDescription = description,
                 time = System.currentTimeMillis(),
-                likes = listOf<String>()
+                likes = listOf<String>(),
+                searchTerms = searchTerms
             )
 
             // Save the post data to the Firestore database
@@ -507,6 +774,7 @@ class IgViewModel @Inject constructor(
      * 6. On failure, handles the exception and sets refreshPostsProgress to false.
      * 7. If the current UID is not available, handles the case where the username is unavailable and logs the user out.
      */
+
     private fun refreshPosts() {
         val currentUid = auth.currentUser?.uid
         if (currentUid != null) {
@@ -542,33 +810,266 @@ class IgViewModel @Inject constructor(
      * @param documents The Firestore query results.
      * @param outState A mutable state that holds the list of posts to be updated.
      */
-    private fun convertPosts(documents: QuerySnapshot, outState: MutableState<List<PostData>>) {
+    private fun convertPosts(querySnapshot: QuerySnapshot, outState: MutableState<List<PostData>>) {
         val newPosts = mutableListOf<PostData>()
-        documents.forEach { doc ->
-            val post = doc.toObject<PostData>()
+
+        querySnapshot.forEach { document ->
+            val post = document.toObject<PostData>()
             newPosts.add(post)
         }
 
-        // Sort the new posts by descending time
-        val sortedPosts = newPosts.sortedByDescending { it.time }
+        // Get the current list of posts
+        val currentPosts = outState.value.toMutableList()
+
+        // Update the existing posts with the new posts
+        newPosts.forEach { newPost ->
+            val index = currentPosts.indexOfFirst { it.postId == newPost.postId }
+            if (index != -1) {
+                currentPosts[index] = newPost
+            } else {
+                currentPosts.add(newPost)
+            }
+        }
+
+        // Sort the posts by descending time
+        val sortedPosts = currentPosts.sortedByDescending { it.time }
 
         // Update the post list in the app's state
         outState.value = sortedPosts
     }
 
+
     /**
-     * Retrieves a post with a specified [postId] from the list of posts.
+     * Retrieves a specific post by its postId.
+     *
+     * This function performs the following steps:
+     *
+     * 1. Fetches all posts using a separate coroutine.
+     * 2. Filters the list to find the post with the specified postId.
      *
      * @param postId The unique identifier of the post to retrieve.
-     * @return The [PostData] object with the matching [postId], or null if not found.
+     * @return The PostData object with the specified postId, or null if not found.
      */
-    fun getPostById(postId: String): PostData? {
-        // Use the 'firstOrNull' function to find the first post with a matching 'postId'
-        // in the list of posts ('posts.value').
-        // If a matching post is found, it is returned; otherwise, 'null' is returned.
-        return posts.value.firstOrNull { it.postId == postId }
+    suspend fun getPostById(postId: String): PostData? {
+        // Fetch all posts using a separate coroutine
+        val allPosts = getAllPosts()
+
+        // Filter the list to find the post with the specified postId
+        return allPosts.firstOrNull { it.postId == postId }
+    }
+
+    /**
+     * Retrieves a list of all posts from Firestore.
+     *
+     * This function performs the following steps:
+     *
+     * 1. Initiates a Firestore query to get all posts.
+     * 2. Converts the query result into a list of PostData objects using the `convertPosts` function.
+     *
+     * @return A list of all PostData objects retrieved from Firestore.
+     */
+    private suspend fun getAllPosts(): List<PostData> = suspendCoroutine { continuation ->
+        db.collection("posts")
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val postsList = querySnapshot.documents.mapNotNull { it.toObject<PostData>() }
+                continuation.resume(postsList)
+            }
+            .addOnFailureListener { exc ->
+                handleException(exc, "Error getting all posts")
+                continuation.resumeWithException(exc)
+            }
     }
 
 
 
+
+    /**
+     * Searches for posts that match the provided search term.
+     *
+     * This function performs the following steps:
+     *
+     * 1. Checks if the provided search term is not empty.
+     * 2. Sets `searchedPostsProgress` to true to indicate the search process has started.
+     * 3. Queries the Firestore database to find posts containing the provided search term.
+     * 4. Converts the query result into a list of PostData objects using the `convertPosts` function.
+     * 5. Sets `searchedPostsProgress` to false to indicate the search process is complete.
+     *
+     * @param searchTerm The search term to match against post descriptions.
+     */
+    fun searchPosts(searchTerm: String) {
+        // Check if the provided search term is not empty
+        if (searchTerm.isNotEmpty()) {
+            // Set `searchedPostsProgress` to true to indicate the search process has started
+            searchedPostsProgress.value = true
+
+            // Query the Firestore database to find posts containing the provided search term
+            db.collection(POSTS)
+                .whereArrayContains("searchTerms", searchTerm.trim().lowercase())
+                .get()
+                .addOnSuccessListener { querySnapshot ->
+                    // Convert the query result into a list of PostData objects using the `convertPosts` function
+                    convertPosts(querySnapshot, searchedPosts)
+
+                    // Set `searchedPostsProgress` to false to indicate the search process is complete
+                    searchedPostsProgress.value = false
+                }
+                .addOnFailureListener { exc ->
+                    // Handle failure by handling the exception, resetting `searchedPostsProgress`, and displaying an error message
+                    handleException(exc, "Cannot search posts")
+                    searchedPostsProgress.value = false
+                }
+        }
+    }
+
+    fun onFollowClick(userId: String) {
+        auth.currentUser?.uid?.let { currentUser ->
+            val following = arrayListOf<String>()
+            userData.value?.following?.let {
+                following.addAll(it)
+            }
+            if (following.contains(userId)) {
+                following.remove(userId)
+            } else {
+                following.add(userId)
+            }
+            db.collection(USERS).document(currentUser).update("following", following)
+                .addOnSuccessListener {
+                    getUserData(currentUser)
+                }
+        }
+    }
+
+    /**
+     * Retrieves a personalized feed of posts based on the users that the current user is following.
+     * If the user is not following anyone or no posts are found, it falls back to retrieving a general feed.
+     */
+    private fun getPersonalizedFeed() {
+        // Set `postsFeedProgress` to true to indicate the feed retrieval process has started
+        postsFeedProgress.value = true
+
+        // Retrieve the list of users that the current user is following
+        val following = userData.value?.following
+
+        if (!following.isNullOrEmpty()) {
+            // Query the Firestore database to find posts by users the current user is following
+            db.collection(POSTS).whereIn("userId", following)
+                .get()
+                .addOnSuccessListener { querySnapshot ->
+                    // Convert the query result into a list of PostData objects using the `convertPosts` function
+                    convertPosts(querySnapshot, postsFeed)
+
+                    if (postsFeed.value.isEmpty()) {
+                        // If no posts are found, fall back to retrieving a general feed
+                        getGeneralFeed()
+                    } else {
+                        // Set `postsFeedProgress` to false to indicate the feed retrieval process is complete
+                        postsFeedProgress.value = false
+                    }
+                }
+                .addOnFailureListener { exc ->
+                    // Handle failure by handling the exception, resetting `postsFeedProgress`, and displaying an error message
+                    handleException(exc, "Cannot get personalized feed")
+                    postsFeedProgress.value = false
+                }
+        } else {
+            // If the user is not following anyone, fall back to retrieving a general feed
+            getGeneralFeed()
+        }
+    }
+
+    /**
+     * Retrieves a general feed of posts based on the posts created within the last 24 hours.
+     */
+    private fun getGeneralFeed() {
+        // Set `postsFeedProgress` to true to indicate the feed retrieval process has started
+        postsFeedProgress.value = true
+
+        // Calculate the current time in milliseconds
+        val currentTime = System.currentTimeMillis()
+
+        // Define the time difference to consider (1 day in milliseconds)
+        val difference = 24 * 60 * 60 * 1000
+
+        // Query the Firestore database to find posts created within the last 24 hours
+        db.collection(POSTS).whereGreaterThan("time", currentTime - difference)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                // Convert the query result into a list of PostData objects using the `convertPosts` function
+                convertPosts(querySnapshot, postsFeed)
+
+                // Set `postsFeedProgress` to false to indicate the feed retrieval process is complete
+                postsFeedProgress.value = false
+            }
+            .addOnFailureListener { exc ->
+                // Handle failure by handling the exception, resetting `postsFeedProgress`, and displaying an error message
+                handleException(exc, "Cannot get feed")
+                postsFeedProgress.value = false
+            }
+    }
+
+    fun onLikePost(postData: PostData) {
+        auth.currentUser?.uid?.let { userId ->
+            postData.likes?.let { likes ->
+                val newLikes = arrayListOf<String>()
+                if (likes.contains(userId)) {
+                    newLikes.addAll(likes.filter { userId != it })
+                } else {
+                    newLikes.addAll(likes)
+                    newLikes.add(userId)
+                }
+                postData.postId?.let { postId ->
+                    db.collection(POSTS).document(postId).update("likes", newLikes)
+                        .addOnSuccessListener {
+                            postData.likes = newLikes
+                        }
+                        .addOnFailureListener {
+                            handleException(it, "Unable to like post")
+                        }
+                }
+            }
+        }
+    }
+
+    fun createComment(postId: String, text: String) {
+        userData.value?.username?.let { username ->
+            val commentId = UUID.randomUUID().toString()
+            val comment = CommentData(
+                commentId = commentId,
+                postId = postId,
+                username = username,
+                text = text,
+                timestamp = System.currentTimeMillis()
+            )
+            db.collection(COMMENTS).document(commentId).set(comment)
+                .addOnSuccessListener {
+                    getComments(postId)
+                }
+                .addOnFailureListener { exc ->
+                    handleException(exc, "Cannot create comment")
+                }
+
+        }
+    }
+
+    fun getComments(postId: String?) {
+        commentsProgress.value = true
+        db.collection(COMMENTS).whereEqualTo("postId", postId).get()
+            .addOnSuccessListener { documents ->
+                val newComments = mutableListOf<CommentData>()
+                documents.forEach { doc ->
+                    val comment = doc.toObject<CommentData>()
+                    newComments.add(comment)
+                }
+                val sortedComments = newComments.sortedByDescending { it.timestamp }
+                comments.value = sortedComments
+                commentsProgress.value = false
+            }
+            .addOnFailureListener { exc ->
+                handleException(exc, "Cannot retrieve comments")
+                commentsProgress.value = false
+            }
+    }
+
 }
+

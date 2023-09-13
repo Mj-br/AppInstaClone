@@ -1,6 +1,10 @@
 package com.cursokotlin.appinstaclone.main.composables
 
 import android.widget.Toast
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,8 +20,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -107,6 +113,8 @@ private fun buildRoute(dest: DestinationScreen, parameter: String? = null): Stri
         dest.route
     }
 }
+
+//TODO: TRYING PARCEALABLE
 
 
 /**
@@ -227,4 +235,37 @@ fun CommonDivider() {
             .alpha(0.3f)
             .padding(top = 8.dp, bottom = 8.dp)
     )
+}
+
+private enum class LikeIconSize {
+    SMALL, LARGE
+}
+
+@Composable
+fun LikeAnimation(like: Boolean = true) {
+    var sizeState by remember { mutableStateOf(LikeIconSize.SMALL) }
+    val transition = updateTransition(targetState = sizeState, label = "")
+    val size by transition.animateDp(
+        label = "",
+        transitionSpec = {
+            spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+
+            )
+        }
+    ) { state ->
+        when (state) {
+            LikeIconSize.SMALL -> 0.dp
+            LikeIconSize.LARGE -> 150.dp
+        }
+    }
+
+    Image(
+        painter = painterResource(id = if (like) R.drawable.ic_like else R.drawable.ic_like),
+        contentDescription = null,
+        modifier = Modifier.size(size = size),
+        colorFilter = ColorFilter.tint(if (like) Color.Red else Color.Gray)
+    )
+    sizeState = LikeIconSize.LARGE
 }
