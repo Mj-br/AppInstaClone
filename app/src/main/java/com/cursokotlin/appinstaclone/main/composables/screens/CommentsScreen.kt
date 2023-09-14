@@ -41,6 +41,7 @@ fun CommentsScreen(navController: NavController, vm: IgViewModel, postId: String
     val comments = vm.comments.value
     val commentsProgress = vm.commentsProgress.value
 
+
     Column(modifier = Modifier.fillMaxSize()) {
 
         if (commentsProgress) {
