@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.cursokotlin.appinstaclone.data.CommentData
 import com.cursokotlin.appinstaclone.data.Event
 import com.cursokotlin.appinstaclone.data.PostData
@@ -16,7 +17,10 @@ import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.lang.Exception
 import java.util.UUID
 import javax.inject.Inject
@@ -1031,45 +1035,84 @@ class IgViewModel @Inject constructor(
         }
     }
 
-    fun createComment(postId: String, text: String) {
-        userData.value?.username?.let { username ->
-            val commentId = UUID.randomUUID().toString()
-            val comment = CommentData(
-                commentId = commentId,
-                postId = postId,
-                username = username,
-                text = text,
-                timestamp = System.currentTimeMillis()
-            )
-            db.collection(COMMENTS).document(commentId).set(comment)
-                .addOnSuccessListener {
-                    getComments(postId)
-                }
-                .addOnFailureListener { exc ->
-                    handleException(exc, "Cannot create comment")
-                }
+    /**
+     * Creates a new comment for a specific post.
+     *
+     * @param postId The ID of the post to which the comment will be added.
+     * @param text The text content of the comment.
+     */
+    suspend fun createComment(postId: String, text: String) {
+        // Launch a coroutine in the viewModelScope
+        viewModelScope.launch {
+            // This code block runs on the IO dispatcher by default,
+            // which is suitable for database operations.
+            withContext(Dispatchers.IO) {
+                // Retrieve the current user's username from userData
+                userData.value?.username?.let { username ->
+                    // Generate a unique commentId using UUID
+                    val commentId = UUID.randomUUID().toString()
 
+                    // Create a CommentData object
+                    val comment = CommentData(
+                        commentId = commentId,
+                        postId = postId,
+                        username = username,
+                        text = text,
+                        timestamp = System.currentTimeMillis()
+                    )
+
+                    try {
+                        // Save the comment to the database
+                        db.collection(COMMENTS).document(commentId).set(comment)
+
+                        // Call the getComments function to update the comments list
+                        getComments(postId)
+                    } catch (exc: Exception) {
+                        // Handle exceptions if they occur during database operations
+                        handleException(exc, "Cannot create comment")
+                    }
+                }
+            }
         }
     }
 
-    fun getComments(postId: String?) {
+    /**
+     * Retrieves comments for a specific post.
+     *
+     * @param postId The ID of the post for which comments are to be retrieved.
+     * @return A list of CommentData objects representing the comments.
+     */
+    suspend fun getComments(postId: String?): List<CommentData> {
         commentsProgress.value = true
-        db.collection(COMMENTS).whereEqualTo("postId", postId).get()
-            .addOnSuccessListener { documents ->
-                val newComments = mutableListOf<CommentData>()
-                documents.forEach { doc ->
-                    val comment = doc.toObject<CommentData>()
-                    newComments.add(comment)
-                }
-                val sortedComments = newComments.sortedByDescending { it.timestamp }
-                comments.value = sortedComments
-                commentsProgress.value = false
+        return try {
+            val documents = withContext(Dispatchers.IO) {
+                // Use Firestore to retrieve comments for the specified postId
+                db.collection(COMMENTS).whereEqualTo("postId", postId).get().await()
             }
-            .addOnFailureListener { exc ->
-                handleException(exc, "Cannot retrieve comments")
-                commentsProgress.value = false
+            // Process the retrieved documents into CommentData objects
+            val newComments = mutableListOf<CommentData>()
+            documents.forEach { doc ->
+                val comment = doc.toObject<CommentData>()
+                newComments.add(comment)
             }
+            // Sort comments by timestamp in descending order
+            val sortedComments = newComments.sortedByDescending { it.timestamp }
+
+            // Update the comments LiveData with the sorted comments
+            comments.value = sortedComments
+            commentsProgress.value = false
+
+            // Return the sorted comments list
+            sortedComments
+        } catch (exc: Exception) {
+            // Handle exceptions if they occur during the retrieval of comments
+            handleException(exc, "Cannot retrieve comments")
+            commentsProgress.value = false
+            emptyList() // Return an empty list or handle error as needed
+        }
     }
+
+    //TODO: I cannot see the number o f comments on my screen. FIX
 
 }
 
