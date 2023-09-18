@@ -3,8 +3,10 @@ package com.cursokotlin.appinstaclone
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.cursokotlin.appinstaclone.data.CommentData
 import com.cursokotlin.appinstaclone.data.Event
 import com.cursokotlin.appinstaclone.data.PostData
@@ -16,7 +18,10 @@ import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.lang.Exception
 import java.util.UUID
 import javax.inject.Inject
@@ -53,9 +58,9 @@ class IgViewModel @Inject constructor(
     val comments = mutableStateOf<List<CommentData>>(listOf())
     val commentsProgress = mutableStateOf(false)
 
+    val followers = mutableIntStateOf(0)
 
     init {
-//        auth.signOut()
         // Get the current user's authentication status
         val currentUser = auth.currentUser
 
@@ -64,14 +69,17 @@ class IgViewModel @Inject constructor(
 
         // If a user is signed in, retrieve their UID
         currentUser?.uid?.let { uid ->
-            // Fetch user data based on the UID
-            getUserData(uid)
+            // Launch a coroutine in viewModelScope
+            viewModelScope.launch {
+                // Fetch user data based on the UID
+                getUserData(uid)
 
-            // Refresh the user's posts
-            refreshPosts()
-
+                // Refresh the user's posts
+                refreshPosts()
+            }
         }
     }
+
 
     /**
      * Handles the login process.
@@ -104,17 +112,19 @@ class IgViewModel @Inject constructor(
         // Attempt to sign in with the provided email and password
         auth.signInWithEmailAndPassword(email, pass)
             .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    // Login successful, update state and fetch user data
-                    signedIn.value = true
-                    inProgress.value = false
-                    auth.currentUser?.uid?.let { uid ->
-                        getUserData(uid)
+                viewModelScope.launch {
+                    if (task.isSuccessful) {
+                        // Login successful, update state and fetch user data
+                        signedIn.value = true
+                        inProgress.value = false
+                        auth.currentUser?.uid?.let { uid ->
+                            getUserData(uid)
+                        }
+                    } else {
+                        // Login failed, handle the exception and reset inProgress
+                        handleException(task.exception, "Login failed")
+                        inProgress.value = false
                     }
-                } else {
-                    // Login failed, handle the exception and reset inProgress
-                    handleException(task.exception, "Login failed")
-                    inProgress.value = false
                 }
             }
             .addOnFailureListener { exc ->
@@ -123,6 +133,7 @@ class IgViewModel @Inject constructor(
                 inProgress.value = false
             }
     }
+
 
 
     /**
@@ -220,8 +231,20 @@ class IgViewModel @Inject constructor(
                     } else {
                         // Create a new user document with the provided data
                         db.collection(USERS).document(uid).set(userData)
-                        getUserData(uid)
-                        inProgress.value = false
+                            .addOnSuccessListener {
+                                // Indicate that the operation is complete
+                                inProgress.value = false
+
+                                // Fetch user data within viewModelScope
+                                viewModelScope.launch {
+                                    getUserData(uid)
+                                }
+                            }
+                            .addOnFailureListener { exception ->
+                                // Handle failure to create user document
+                                handleException(exception, "Cannot create user")
+                                inProgress.value = false
+                            }
                     }
                 }
                 .addOnFailureListener { exception ->
@@ -237,38 +260,40 @@ class IgViewModel @Inject constructor(
      *
      * @param uid The unique identifier of the user whose data is to be retrieved.
      */
-    private fun getUserData(uid: String) {
+    private suspend fun getUserData(uid: String) {
         /* Indicate that an operation is in progress */
         inProgress.value = true
 
-        /* Retrieve the user data document from the database */
-        db.collection(USERS).document(uid).get()
-            .addOnSuccessListener {
-                /* Convert the retrieved document to a UserData object */
-                val user = it.toObject<UserData>()
+        try {
+            /* Retrieve the user data document from the database */
+            val documentSnapshot = db.collection(USERS).document(uid).get().await()
 
-                /* Update the userData value with the retrieved user data */
-                userData.value = user
+            /* Convert the retrieved document to a UserData object */
+            val user = documentSnapshot.toObject<UserData>()
 
-                /* Indicate that the operation is complete */
-                inProgress.value = false
+            /* Update the userData value with the retrieved user data */
+            userData.value = user
 
-                /* Refresh userData posts */
-                refreshPosts()
+            /* Refresh userData posts */
+            refreshPosts()
 
-                getPersonalizedFeed()
+            getPersonalizedFeed()
 
-                /* Show a notification to indicate that user data was successfully retrieved */
-//                popupNotification.value = Event("User data retrieved successfully")
-            }
-            .addOnFailureListener { exc ->
-                /* Handle failure to retrieve user data */
-                handleException(exc, "Cannot retrieve userdata")
+            // Fetch followers count and update it
+            val followersCount = getFollowers(uid)
+            followers.value = followersCount
 
-                /* Indicate that the operation is complete */
-                inProgress.value = false
-            }
+            /* Show a notification to indicate that user data was successfully retrieved */
+            // popupNotification.value = Event("User data retrieved successfully")
+        } catch (exc: Exception) {
+            /* Handle failure to retrieve user data */
+            handleException(exc, "Cannot retrieve userdata")
+        } finally {
+            /* Indicate that the operation is complete */
+            inProgress.value = false
+        }
     }
+
 
     /**
      * This function handles exception scenarios and displays popup notifications in the user interface.
@@ -933,12 +958,23 @@ class IgViewModel @Inject constructor(
             } else {
                 following.add(userId)
             }
-            db.collection(USERS).document(currentUser).update("following", following)
-                .addOnSuccessListener {
+
+            // Launch a coroutine in viewModelScope
+            viewModelScope.launch {
+                try {
+                    // Update the "following" field in Firestore
+                    db.collection(USERS).document(currentUser).update("following", following).await()
+
+                    // Call getUserData within the coroutine
                     getUserData(currentUser)
+                } catch (exc: Exception) {
+                    // Handle exceptions, e.g., log or show an error message
+                    handleException(exc, "Failed to update following status")
                 }
+            }
         }
     }
+
 
     /**
      * Retrieves a personalized feed of posts based on the users that the current user is following.
@@ -1031,44 +1067,94 @@ class IgViewModel @Inject constructor(
         }
     }
 
-    fun createComment(postId: String, text: String) {
-        userData.value?.username?.let { username ->
-            val commentId = UUID.randomUUID().toString()
-            val comment = CommentData(
-                commentId = commentId,
-                postId = postId,
-                username = username,
-                text = text,
-                timestamp = System.currentTimeMillis()
-            )
-            db.collection(COMMENTS).document(commentId).set(comment)
-                .addOnSuccessListener {
-                    getComments(postId)
-                }
-                .addOnFailureListener { exc ->
-                    handleException(exc, "Cannot create comment")
-                }
+    /**
+     * Creates a new comment for a specific post.
+     *
+     * @param postId The ID of the post to which the comment will be added.
+     * @param text The text content of the comment.
+     */
+    suspend fun createComment(postId: String, text: String) {
+        // Launch a coroutine in the viewModelScope
+        viewModelScope.launch {
+            // This code block runs on the IO dispatcher by default,
+            // which is suitable for database operations.
+            withContext(Dispatchers.IO) {
+                // Retrieve the current user's username from userData
+                userData.value?.username?.let { username ->
+                    // Generate a unique commentId using UUID
+                    val commentId = UUID.randomUUID().toString()
 
+                    // Create a CommentData object
+                    val comment = CommentData(
+                        commentId = commentId,
+                        postId = postId,
+                        username = username,
+                        text = text,
+                        timestamp = System.currentTimeMillis()
+                    )
+
+                    try {
+                        // Save the comment to the database
+                        db.collection(COMMENTS).document(commentId).set(comment)
+
+                        // Call the getComments function to update the comments list
+                        getComments(postId)
+                    } catch (exc: Exception) {
+                        // Handle exceptions if they occur during database operations
+                        handleException(exc, "Cannot create comment")
+                    }
+                }
+            }
         }
     }
 
-    fun getComments(postId: String?) {
+    /**
+     * Retrieves comments for a specific post.
+     *
+     * @param postId The ID of the post for which comments are to be retrieved.
+     * @return A list of CommentData objects representing the comments.
+     */
+    suspend fun getComments(postId: String?): List<CommentData> {
         commentsProgress.value = true
-        db.collection(COMMENTS).whereEqualTo("postId", postId).get()
-            .addOnSuccessListener { documents ->
-                val newComments = mutableListOf<CommentData>()
-                documents.forEach { doc ->
-                    val comment = doc.toObject<CommentData>()
-                    newComments.add(comment)
-                }
-                val sortedComments = newComments.sortedByDescending { it.timestamp }
-                comments.value = sortedComments
-                commentsProgress.value = false
+        return try {
+            val documents = withContext(Dispatchers.IO) {
+                // Use Firestore to retrieve comments for the specified postId
+                db.collection(COMMENTS).whereEqualTo("postId", postId).get().await()
             }
-            .addOnFailureListener { exc ->
-                handleException(exc, "Cannot retrieve comments")
-                commentsProgress.value = false
+            // Process the retrieved documents into CommentData objects
+            val newComments = mutableListOf<CommentData>()
+            documents.forEach { doc ->
+                val comment = doc.toObject<CommentData>()
+                newComments.add(comment)
             }
+            // Sort comments by timestamp in descending order
+            val sortedComments = newComments.sortedByDescending { it.timestamp }
+
+            // Update the comments LiveData with the sorted comments
+            comments.value = sortedComments
+            commentsProgress.value = false
+
+            // Return the sorted comments list
+            sortedComments
+        } catch (exc: Exception) {
+            // Handle exceptions if they occur during the retrieval of comments
+            handleException(exc, "Cannot retrieve comments")
+            commentsProgress.value = false
+            emptyList() // Return an empty list or handle error as needed
+        }
+    }
+
+    //TODO: I cannot see the number o f comments on my screen. FIX
+
+    private suspend fun getFollowers(uid: String?): Int {
+        return try {
+            val documents = db.collection(USERS).whereArrayContains("following", uid ?: "").get().await()
+            documents.size()
+        } catch (exc: Exception) {
+            // Handle exceptions here, e.g., log the error or return a default value
+            handleException(exc, "Failed to fetch followers")
+            -1
+        }
     }
 
 }

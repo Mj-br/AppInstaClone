@@ -31,6 +31,7 @@ import com.cursokotlin.appinstaclone.R
 import com.cursokotlin.appinstaclone.data.PostData
 import com.cursokotlin.appinstaclone.main.composables.CommonDivider
 import com.cursokotlin.appinstaclone.main.composables.CommonImage
+import com.cursokotlin.appinstaclone.main.composables.CommonProgressSpinner
 import com.cursokotlin.appinstaclone.main.composables.UserImageCard
 
 /**
@@ -57,18 +58,12 @@ fun SinglePostScreen(
     }
 
     if (post == null) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = "Could not found postData", fontWeight = FontWeight.Bold)
-        }
+
+        CommonProgressSpinner()
+
     } else {
         // Check if the post data is available
-        post?.userId?.let {//TODO: I have an ERROR here because im receiving a null, because of that the screen does not appear
+        post?.userId?.let {
             Column(
                 modifier = Modifier
                     .fillMaxSize()

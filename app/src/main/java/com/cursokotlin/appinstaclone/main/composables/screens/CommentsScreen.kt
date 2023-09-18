@@ -19,6 +19,7 @@ import androidx.navigation.NavController
 import com.cursokotlin.appinstaclone.IgViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -29,6 +30,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.cursokotlin.appinstaclone.data.CommentData
 import com.cursokotlin.appinstaclone.main.composables.CommonProgressSpinner
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,6 +43,10 @@ fun CommentsScreen(navController: NavController, vm: IgViewModel, postId: String
 
     val comments = vm.comments.value
     val commentsProgress = vm.commentsProgress.value
+
+    // Use a coroutine scope specific to this Composable
+    val coroutineScope = rememberCoroutineScope()
+
 
 
 
@@ -90,9 +97,12 @@ fun CommentsScreen(navController: NavController, vm: IgViewModel, postId: String
             )
             Button(
                 onClick = {
+                    coroutineScope.launch {
+
                     vm.createComment(postId = postId, text = commentText)
                     commentText = ""
                     focusManager.clearFocus()
+                    }
                 },
                 modifier = Modifier.padding(start = 8.dp)
             ) {
