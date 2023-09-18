@@ -3,6 +3,7 @@ package com.cursokotlin.appinstaclone
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -57,10 +58,9 @@ class IgViewModel @Inject constructor(
     val comments = mutableStateOf<List<CommentData>>(listOf())
     val commentsProgress = mutableStateOf(false)
 
-    val followers = mutableStateOf(0)
+    val followers = mutableIntStateOf(0)
 
     init {
-//        auth.signOut()
         // Get the current user's authentication status
         val currentUser = auth.currentUser
 
@@ -69,14 +69,17 @@ class IgViewModel @Inject constructor(
 
         // If a user is signed in, retrieve their UID
         currentUser?.uid?.let { uid ->
-            // Fetch user data based on the UID
-            getUserData(uid)
+            // Launch a coroutine in viewModelScope
+            viewModelScope.launch {
+                // Fetch user data based on the UID
+                getUserData(uid)
 
-            // Refresh the user's posts
-            refreshPosts()
-
+                // Refresh the user's posts
+                refreshPosts()
+            }
         }
     }
+
 
     /**
      * Handles the login process.
@@ -109,17 +112,19 @@ class IgViewModel @Inject constructor(
         // Attempt to sign in with the provided email and password
         auth.signInWithEmailAndPassword(email, pass)
             .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    // Login successful, update state and fetch user data
-                    signedIn.value = true
-                    inProgress.value = false
-                    auth.currentUser?.uid?.let { uid ->
-                        getUserData(uid)
+                viewModelScope.launch {
+                    if (task.isSuccessful) {
+                        // Login successful, update state and fetch user data
+                        signedIn.value = true
+                        inProgress.value = false
+                        auth.currentUser?.uid?.let { uid ->
+                            getUserData(uid)
+                        }
+                    } else {
+                        // Login failed, handle the exception and reset inProgress
+                        handleException(task.exception, "Login failed")
+                        inProgress.value = false
                     }
-                } else {
-                    // Login failed, handle the exception and reset inProgress
-                    handleException(task.exception, "Login failed")
-                    inProgress.value = false
                 }
             }
             .addOnFailureListener { exc ->
@@ -128,6 +133,7 @@ class IgViewModel @Inject constructor(
                 inProgress.value = false
             }
     }
+
 
 
     /**
@@ -225,8 +231,20 @@ class IgViewModel @Inject constructor(
                     } else {
                         // Create a new user document with the provided data
                         db.collection(USERS).document(uid).set(userData)
-                        getUserData(uid)
-                        inProgress.value = false
+                            .addOnSuccessListener {
+                                // Indicate that the operation is complete
+                                inProgress.value = false
+
+                                // Fetch user data within viewModelScope
+                                viewModelScope.launch {
+                                    getUserData(uid)
+                                }
+                            }
+                            .addOnFailureListener { exception ->
+                                // Handle failure to create user document
+                                handleException(exception, "Cannot create user")
+                                inProgress.value = false
+                            }
                     }
                 }
                 .addOnFailureListener { exception ->
@@ -256,22 +274,21 @@ class IgViewModel @Inject constructor(
             /* Update the userData value with the retrieved user data */
             userData.value = user
 
-            /* Indicate that the operation is complete */
-            inProgress.value = false
-
             /* Refresh userData posts */
             refreshPosts()
 
             getPersonalizedFeed()
 
-            fetchFollowers(user?.userId)
+            // Fetch followers count and update it
+            val followersCount = getFollowers(uid)
+            followers.value = followersCount
 
             /* Show a notification to indicate that user data was successfully retrieved */
             // popupNotification.value = Event("User data retrieved successfully")
         } catch (exc: Exception) {
             /* Handle failure to retrieve user data */
             handleException(exc, "Cannot retrieve userdata")
-
+        } finally {
             /* Indicate that the operation is complete */
             inProgress.value = false
         }
@@ -1128,12 +1145,6 @@ class IgViewModel @Inject constructor(
     }
 
     //TODO: I cannot see the number o f comments on my screen. FIX
-
-    private fun fetchFollowers(uid: String?) {
-        viewModelScope.launch {
-            val followersCount = getFollowers(uid)
-        }
-    }
 
     private suspend fun getFollowers(uid: String?): Int {
         return try {

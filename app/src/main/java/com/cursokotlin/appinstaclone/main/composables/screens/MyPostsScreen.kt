@@ -82,6 +82,7 @@ fun MyPostsScreen(navController: NavController, vm: IgViewModel) {
     val postsLoading = vm.refreshPostsProgress.value
     val posts = vm.posts.value
 
+    val followers = vm.followers.value
 
     Column {
         Column(modifier = Modifier.weight(1f)) {
@@ -100,7 +101,7 @@ fun MyPostsScreen(navController: NavController, vm: IgViewModel) {
                     )
 
                     Text(
-                        text = "54\nfollowers", modifier = Modifier
+                        text = "$followers\nfollowers", modifier = Modifier
                             .weight(1f)
                             .align(Alignment.CenterVertically),
                         textAlign = TextAlign.Center,
