@@ -57,6 +57,7 @@ class IgViewModel @Inject constructor(
     val comments = mutableStateOf<List<CommentData>>(listOf())
     val commentsProgress = mutableStateOf(false)
 
+    val followers = mutableStateOf(0)
 
     init {
 //        auth.signOut()
@@ -241,38 +242,41 @@ class IgViewModel @Inject constructor(
      *
      * @param uid The unique identifier of the user whose data is to be retrieved.
      */
-    private fun getUserData(uid: String) {
+    private suspend fun getUserData(uid: String) {
         /* Indicate that an operation is in progress */
         inProgress.value = true
 
-        /* Retrieve the user data document from the database */
-        db.collection(USERS).document(uid).get()
-            .addOnSuccessListener {
-                /* Convert the retrieved document to a UserData object */
-                val user = it.toObject<UserData>()
+        try {
+            /* Retrieve the user data document from the database */
+            val documentSnapshot = db.collection(USERS).document(uid).get().await()
 
-                /* Update the userData value with the retrieved user data */
-                userData.value = user
+            /* Convert the retrieved document to a UserData object */
+            val user = documentSnapshot.toObject<UserData>()
 
-                /* Indicate that the operation is complete */
-                inProgress.value = false
+            /* Update the userData value with the retrieved user data */
+            userData.value = user
 
-                /* Refresh userData posts */
-                refreshPosts()
+            /* Indicate that the operation is complete */
+            inProgress.value = false
 
-                getPersonalizedFeed()
+            /* Refresh userData posts */
+            refreshPosts()
 
-                /* Show a notification to indicate that user data was successfully retrieved */
-//                popupNotification.value = Event("User data retrieved successfully")
-            }
-            .addOnFailureListener { exc ->
-                /* Handle failure to retrieve user data */
-                handleException(exc, "Cannot retrieve userdata")
+            getPersonalizedFeed()
 
-                /* Indicate that the operation is complete */
-                inProgress.value = false
-            }
+            fetchFollowers(user?.userId)
+
+            /* Show a notification to indicate that user data was successfully retrieved */
+            // popupNotification.value = Event("User data retrieved successfully")
+        } catch (exc: Exception) {
+            /* Handle failure to retrieve user data */
+            handleException(exc, "Cannot retrieve userdata")
+
+            /* Indicate that the operation is complete */
+            inProgress.value = false
+        }
     }
+
 
     /**
      * This function handles exception scenarios and displays popup notifications in the user interface.
@@ -937,12 +941,23 @@ class IgViewModel @Inject constructor(
             } else {
                 following.add(userId)
             }
-            db.collection(USERS).document(currentUser).update("following", following)
-                .addOnSuccessListener {
+
+            // Launch a coroutine in viewModelScope
+            viewModelScope.launch {
+                try {
+                    // Update the "following" field in Firestore
+                    db.collection(USERS).document(currentUser).update("following", following).await()
+
+                    // Call getUserData within the coroutine
                     getUserData(currentUser)
+                } catch (exc: Exception) {
+                    // Handle exceptions, e.g., log or show an error message
+                    handleException(exc, "Failed to update following status")
                 }
+            }
         }
     }
+
 
     /**
      * Retrieves a personalized feed of posts based on the users that the current user is following.
@@ -1113,6 +1128,23 @@ class IgViewModel @Inject constructor(
     }
 
     //TODO: I cannot see the number o f comments on my screen. FIX
+
+    private fun fetchFollowers(uid: String?) {
+        viewModelScope.launch {
+            val followersCount = getFollowers(uid)
+        }
+    }
+
+    private suspend fun getFollowers(uid: String?): Int {
+        return try {
+            val documents = db.collection(USERS).whereArrayContains("following", uid ?: "").get().await()
+            documents.size()
+        } catch (exc: Exception) {
+            // Handle exceptions here, e.g., log the error or return a default value
+            handleException(exc, "Failed to fetch followers")
+            -1
+        }
+    }
 
 }
 

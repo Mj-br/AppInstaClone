@@ -92,7 +92,7 @@ fun MyPostsScreen(navController: NavController, vm: IgViewModel) {
                 Row(modifier = Modifier.padding(top = 48.dp)) {
 
                     Text(
-                        text = "15\nposts", modifier = Modifier
+                        text = "${posts.size}\nposts", modifier = Modifier
                             .weight(1f)
                             .align(Alignment.CenterVertically),
                         textAlign = TextAlign.Center,
@@ -108,7 +108,7 @@ fun MyPostsScreen(navController: NavController, vm: IgViewModel) {
                     )
 
                     Text(
-                        text = "93\nfollowing", modifier = Modifier
+                        text = "${userData?.following?.size ?: 0}\nfollowing", modifier = Modifier
                             .weight(1f)
                             .align(Alignment.CenterVertically),
                         textAlign = TextAlign.Center,
