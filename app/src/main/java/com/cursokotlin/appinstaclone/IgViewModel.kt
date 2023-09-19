@@ -889,6 +889,12 @@ class IgViewModel @Inject constructor(
         }
     }
 
+    fun fetchComments(postId: String?) {
+        viewModelScope.launch {
+            getComments(postId)
+        }
+    }
+
     /**
      * Retrieves comments for a specific post.
      *
@@ -909,7 +915,7 @@ class IgViewModel @Inject constructor(
                 newComments.add(comment)
             }
             // Sort comments by timestamp in descending order
-            val sortedComments = newComments.sortedByDescending { it.timestamp }
+            val sortedComments = newComments.sortedBy { it.timestamp }
 
             // Update the comments LiveData with the sorted comments
             comments.value = sortedComments
