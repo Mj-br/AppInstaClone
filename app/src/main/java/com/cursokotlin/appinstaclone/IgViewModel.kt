@@ -136,7 +136,6 @@ class IgViewModel @Inject constructor(
     }
 
 
-
     /**
      * Handles the sign-up process for a new user.
      *
@@ -688,8 +687,6 @@ class IgViewModel @Inject constructor(
     }
 
 
-
-
     /**
      * Searches for posts that match the provided search term.
      *
@@ -744,7 +741,8 @@ class IgViewModel @Inject constructor(
             viewModelScope.launch {
                 try {
                     // Update the "following" field in Firestore
-                    db.collection(USERS).document(currentUser).update("following", following).await()
+                    db.collection(USERS).document(currentUser).update("following", following)
+                        .await()
 
                     // Call getUserData within the coroutine
                     getUserData(currentUser)
@@ -889,13 +887,19 @@ class IgViewModel @Inject constructor(
         }
     }
 
+    fun fetchComments(postId: String?) {
+        viewModelScope.launch {
+            getComments(postId)
+        }
+    }
+
     /**
      * Retrieves comments for a specific post.
      *
      * @param postId The ID of the post for which comments are to be retrieved.
      * @return A list of CommentData objects representing the comments.
      */
-    suspend fun getComments(postId: String?): List<CommentData> {
+    private suspend fun getComments(postId: String?): List<CommentData> {
         commentsProgress.value = true
         return try {
             val documents = withContext(Dispatchers.IO) {
@@ -909,7 +913,7 @@ class IgViewModel @Inject constructor(
                 newComments.add(comment)
             }
             // Sort comments by timestamp in descending order
-            val sortedComments = newComments.sortedByDescending { it.timestamp }
+            val sortedComments = newComments.sortedBy { it.timestamp }
 
             // Update the comments LiveData with the sorted comments
             comments.value = sortedComments
@@ -925,11 +929,10 @@ class IgViewModel @Inject constructor(
         }
     }
 
-    //TODO: I cannot see the number o f comments on my screen. FIX
-
     private suspend fun getFollowers(uid: String?): Int {
         return try {
-            val documents = db.collection(USERS).whereArrayContains("following", uid ?: "").get().await()
+            val documents =
+                db.collection(USERS).whereArrayContains("following", uid ?: "").get().await()
             documents.size()
         } catch (exc: Exception) {
             // Handle exceptions here, e.g., log the error or return a default value

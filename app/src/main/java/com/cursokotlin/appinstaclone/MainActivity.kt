@@ -58,9 +58,10 @@ sealed class DestinationScreen(val route: String) {
     object NewPost : DestinationScreen("newpost/{imageUri}") {
         fun createRoute(uri: String) = "newpost/$uri"
     }
+
     object SinglePost : DestinationScreen("singlepost")
 
-    object CommentsScreen : DestinationScreen("comments/{postId}"){
+    object CommentsScreen : DestinationScreen("comments/{postId}") {
         fun createRoute(postId: String) = "comments/$postId"
     }
 }
@@ -116,15 +117,13 @@ fun InstagramApp() {
             SinglePostScreen(navController = navController, vm = vm, post = postState.value)
         }
 
-        composable(DestinationScreen.CommentsScreen.route){ navBackStackEntry ->
+        composable(DestinationScreen.CommentsScreen.route) { navBackStackEntry ->
             val postId = navBackStackEntry.arguments?.getString("postId")
 
-            postId?.let{
+            postId?.let {
                 CommentsScreen(navController = navController, vm = vm, postId = it)
             }
         }
-
-
 
 
     }

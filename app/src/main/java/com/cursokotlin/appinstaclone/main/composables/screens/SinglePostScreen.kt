@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -50,12 +51,9 @@ fun SinglePostScreen(
     vm: IgViewModel,
     post: PostData?
 ) {
+    vm.fetchComments(postId = post?.postId)
+    val comments = remember { vm.comments }.value
 
-    val comments = vm.comments.value
-
-    LaunchedEffect(key1 = Unit) {
-        vm.getComments(post?.postId)
-    }
 
     if (post == null) {
 
@@ -84,7 +82,12 @@ fun SinglePostScreen(
                 CommonDivider()
 
                 // Display the single post
-                SinglePostDisplay(navController = navController, vm = vm, post = post, numberComments = comments.size)
+                SinglePostDisplay(
+                    navController = navController,
+                    vm = vm,
+                    post = post,
+                    numberComments = comments.size
+                )
             }
         }
     }
@@ -101,7 +104,12 @@ fun SinglePostScreen(
  * @param post The post data to display.
  */
 @Composable
-fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostData, numberComments: Int) {
+fun SinglePostDisplay(
+    navController: NavController,
+    vm: IgViewModel,
+    post: PostData,
+    numberComments: Int
+) {
     // Get user data from the view model
     val userData = vm.userData.value
 
@@ -173,7 +181,7 @@ fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostD
 
     // Display comments count
     Row(modifier = Modifier.padding(4.dp)) {
-        Text(text = "$numberComments", color = Color.Gray,
+        Text(text = "$numberComments comments", color = Color.Gray,
             modifier = Modifier
                 .padding(start = 8.dp)
                 .clickable {
