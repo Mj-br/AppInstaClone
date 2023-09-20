@@ -99,9 +99,9 @@ fun CommentsScreen(navController: NavController, vm: IgViewModel, postId: String
                 onClick = {
                     coroutineScope.launch {
 
-                    vm.createComment(postId = postId, text = commentText)
-                    commentText = ""
-                    focusManager.clearFocus()
+                        vm.createComment(postId = postId, text = commentText)
+                        commentText = ""
+                        focusManager.clearFocus()
                     }
                 },
                 modifier = Modifier.padding(start = 8.dp)
@@ -114,9 +114,11 @@ fun CommentsScreen(navController: NavController, vm: IgViewModel, postId: String
 
 @Composable
 fun CommentRow(comment: CommentData) {
-    Row(modifier = Modifier
-        .fillMaxWidth()
-        .padding(8.dp)) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
         Text(text = comment.username ?: "", fontWeight = FontWeight.Bold)
         Text(text = comment.text ?: "", modifier = Modifier.padding(start = 8.dp))
     }

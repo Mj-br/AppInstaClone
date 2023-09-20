@@ -82,7 +82,12 @@ fun SinglePostScreen(
                 CommonDivider()
 
                 // Display the single post
-                SinglePostDisplay(navController = navController, vm = vm, post = post, numberComments = comments.size)
+                SinglePostDisplay(
+                    navController = navController,
+                    vm = vm,
+                    post = post,
+                    numberComments = comments.size
+                )
             }
         }
     }
@@ -99,7 +104,12 @@ fun SinglePostScreen(
  * @param post The post data to display.
  */
 @Composable
-fun SinglePostDisplay(navController: NavController, vm: IgViewModel, post: PostData, numberComments: Int) {
+fun SinglePostDisplay(
+    navController: NavController,
+    vm: IgViewModel,
+    post: PostData,
+    numberComments: Int
+) {
     // Get user data from the view model
     val userData = vm.userData.value
 

@@ -100,7 +100,11 @@ fun PostsList(
         LazyColumn {
             items(items = posts) { postData ->
                 Post(post = postData, currentUserId = currentUserId, vm = vm) {
-                    navigateTo(navController, DestinationScreen.SinglePost, postData.postId/*TODO:Look out*/)
+                    navigateTo(
+                        navController,
+                        DestinationScreen.SinglePost,
+                        postData.postId/*TODO:Look out*/
+                    )
 
                 }
             }
