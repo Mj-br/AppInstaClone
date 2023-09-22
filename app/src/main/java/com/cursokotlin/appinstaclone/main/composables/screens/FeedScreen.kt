@@ -103,7 +103,7 @@ fun PostsList(
                     navigateTo(
                         navController,
                         DestinationScreen.SinglePost,
-                        postData.postId/*TODO:Look out*/
+                        postData.postId
                     )
 
                 }
