@@ -1,61 +1,44 @@
-<h1>AppInstaClone</h1>
+# AppInstaClone
 
+## Objectives
+- **Application Architecture:** Implement a clean, maintainable MVVM pattern.
+- **Apply Clean Architecture:** Pending.
 
-<h2>Objectives</h2>
-<ul>
-  <li><strong>Application only with MVVM pattern:</strong> Done </li>
-  <li><strong>Apply Clean Architecture:</strong> Pending </li>
-</ul>
-
-<h2>Description</h2>
-<p>This educational and personal practice project mirrors some of Instagram's features, providing an opportunity to learn and apply best software development practices. It's important to note that not all companies follow these principles, and many legacy codebases may require technical upgrades to align with modern development standards.
+## Description
+AppInstaClone is an educational and personal project that replicates some of Instagram's features. This project provides an opportunity to learn and apply best software development practices. It's essential to note that not all companies follow these principles, and many legacy codebases may require technical upgrades to align with modern development standards.
 
 The primary purpose of this application is to focus on implementing clean code and improving the existing codebase to make it more scalable and maintainable. The project objectives include:
-
 - Implementation of SOLID principles to enhance code quality and maintainability.
 - Integration of Clean Architecture principles, separating the application into distinct layers: data, domain, and presentation (UI).
 - Utilization of MVVM (Model-View-ViewModel) architectural pattern to promote a clear separation of concerns and improve code organization.
 
-This project serves as a valuable learning experience for developers looking to refine their skills in software architecture and best coding practices. It simulates a scenario where a technical upgrade is needed to bring an existing application up to modern standards, ensuring it remains adaptable and efficient.</p>
+This project serves as a valuable learning experience for developers looking to refine their skills in software architecture and best coding practices. It simulates a scenario where a technical upgrade is needed to bring an existing application up to modern standards, ensuring it remains adaptable and efficient.
 
-<h2>Technologies Used</h2>
-<ul>
-  <li><strong>Firebase:</strong> Backend used for storage post images, authentification and collection of data.</li>
-  <li><strong>MVVM Pattern:</strong> The pattern used to separate user interface logic.</li>
-  <li><strong>Jetpack Compose:</strong> Android library for declarative UI creation.</li>
-  <li><strong>Jetpack Navigation:</strong> Android's recommended navigation system.</li>
-  <li><strong>Hilt:</strong> Dependency injection library used for firebase instances.</li>
-  <li><strong>Material 3:</strong> Updated Android Material Design.</li>
-  <li><strong>Coil:</strong> Library for efficient image loading.</li>
-  <li><strong>Coroutines:</strong> Used for handling asynchronous operations more easily.</li>
-</ul>
+## Technologies Used
+- **Firebase:** Backend used for storage, authentication, and data collection.
+- **MVVM Pattern:** The pattern used to separate user interface logic.
+- **Jetpack Compose:** Android library for declarative UI creation.
+- **Jetpack Navigation:** Android's recommended navigation system.
+- **Hilt:** Dependency injection library used for Firebase instances.
+- **Material 3:** Updated Android Material Design.
+- **Coil:** Library for efficient image loading.
+- **Coroutines:** Used for handling asynchronous operations more easily.
 
-<h2>Key Features</h2>
-<ul>
-  <li><strong>Login and Registration:</strong> Allows users to create accounts and log in.</li>
-  <li><strong>Feed of Posts:</strong> Enables users to view posts from others.</li>
-  <li><strong>Search:</strong> Provides keyword-based post search.</li>
-  <li><strong>User Profile:</strong> Lets users edit their name, username, and profile picture, and upload new posts.</li>
-</ul>
+## Key Features
+- **Login and Registration:** Allows users to create accounts and log in.
+- **Feed of Posts:** Enables users to view posts from others.
+- **Search:** Provides keyword-based post search.
+- **User Profile:** Lets users edit their name, username, and profile picture, and upload new posts.
 
-<h2>Screenshots</h2>
+## Screenshots
+![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(7).jpg)
+![Register](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(6).jpg)
 
-| Login                 | Register                |
-| --------------------- | ----------------------- |
-| ![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(7).jpg) | ![Register](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(6).jpg) |
+![Search](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(5).jpg)
+![Post](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(4).jpg)
 
+![Feed](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(3).jpg)
+![Edit](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(2).jpg)
 
-| Search                | Post                    |
-| --------------------- | ----------------------- |
-| ![Search](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(5).jpg) | ![Post](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(4).jpg) |
-
-
-| Feed                  | Edit                    |
-| --------------------- | ----------------------- |
-| ![Feed](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(3).jpg) | ![Edit](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(2).jpg) |
-
-
-| Profile               | Comments                |
-| --------------------- | ----------------------- |
-| ![Profile](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(1).jpg) | ![Comments](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(8).jpg) | 
-
+![Profile](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(1).jpg)
+![Comments](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(8).jpg)
