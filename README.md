@@ -32,8 +32,7 @@ This project serves as a valuable learning experience for developers looking to 
 <h2>Screenshots</h2>
 
 <h2>Video Demo</h2>
-<iframe src="https://player.vimeo.com/video/873417599" width="640" height="360" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
-
+**[Watch Video on Vimeo](https://vimeo.com/873417599)**
 
 <h2>Key Features</h2>
 <ul>
