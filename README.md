@@ -34,11 +34,11 @@ This project serves as a valuable learning experience for developers looking to 
 
 <h3>Login</h3>
 
-<img src="https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(7).jpg" alt="Login" width="400" height="500">
+<img src="https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(7).jpg" alt="Login" width="400" height="auto">
 
 <h3>Register</h3>
 
-![Register](./media/photo%20(6).jpg)
+<img src="https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(6).jpg" alt="Login" width="400" height="auto">
 
 
 <h2>Video Demo</h2>
