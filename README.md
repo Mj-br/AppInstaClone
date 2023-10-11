@@ -30,10 +30,6 @@ This project serves as a valuable learning experience for developers looking to 
   <li><strong>Coroutines:</strong> Used for handling asynchronous operations more easily.</li>
 </ul>
 
-
-<h2>Video Demo</h2>
-
-
 <h2>Key Features</h2>
 <ul>
   <li><strong>Login and Registration:</strong> Allows users to create accounts and log in.</li>
