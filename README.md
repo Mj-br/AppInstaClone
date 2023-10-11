@@ -32,7 +32,8 @@ This project serves as a valuable learning experience for developers looking to 
 
 <h2>Screenshots</h2>
 
-<img src="https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(7).jpg" alt="Image Alt Text" width="360" height="640">
+![Image Alt Text](./media/photo%20(7).jpg)
+
 
 <h2>Video Demo</h2>
 <video width="640" height="360" controls>
