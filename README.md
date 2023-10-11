@@ -37,6 +37,21 @@ This project serves as a valuable learning experience for developers looking to 
 | ![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(7).jpg) | ![Register](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(6).jpg) |
 
 
+| Login                | Register                |
+| --------------------- | ----------------------- |
+| ![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(5).jpg) | ![Register](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(4).jpg) |
+
+
+| Login                | Register                |
+| --------------------- | ----------------------- |
+| ![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(3).jpg) | ![Register](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(2).jpg) |
+
+
+| Login                | Register                |
+| --------------------- | ----------------------- |
+| ![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(1).jpg) | 
+
+
 
 <h2>Video Demo</h2>
 <video width="640" height="360" controls>
