@@ -19,7 +19,7 @@ This project serves as a valuable learning experience for developers looking to 
 
 <h2>Technologies Used</h2>
 <ul>
-  <li><strong>Firebase:</strong> Backend used for storage post images, authentification and collection of data</li>
+  <li><strong>Firebase:</strong> Backend used for storage post images, authentification and collection of data.</li>
   <li><strong>MVVM Pattern:</strong> The pattern used to separate user interface logic.</li>
   <li><strong>Jetpack Compose:</strong> Android library for declarative UI creation.</li>
   <li><strong>Jetpack Navigation:</strong> Android's recommended navigation system.</li>
@@ -31,6 +31,8 @@ This project serves as a valuable learning experience for developers looking to 
 
 <h2>Screenshots</h2>
 
+<h2>Video Demo</h2>
+<iframe width="600" height="450" src="https://drive.google.com/file/d/1YdIfHID6-lMj4Nxz8nVJnb4mjAvJFnhi/preview" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
 <h2>Key Features</h2>
 <ul>
