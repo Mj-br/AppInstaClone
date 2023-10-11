@@ -45,17 +45,17 @@ This project serves as a valuable learning experience for developers looking to 
 | ![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(7).jpg) | ![Register](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(6).jpg) |
 
 
-| Login                | Register                |
+| Search                | Post                |
 | --------------------- | ----------------------- |
-| ![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(5).jpg) | ![Register](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(4).jpg) |
+| ![Search](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(5).jpg) | ![Post](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(4).jpg) |
 
 
-| Login                | Register                |
+| Feed                | Edit                |
 | --------------------- | ----------------------- |
-| ![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(3).jpg) | ![Register](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(2).jpg) |
+| ![Feed](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(3).jpg) | ![Edit](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(2).jpg) |
 
 
-| Login                | Register                |
+| Profile                | Comments                |
 | --------------------- | ----------------------- |
-| ![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(1).jpg) | ![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(8).jpg) | 
+| ![Profile](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(1).jpg) | ![Comments](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(8).jpg) | 
 
