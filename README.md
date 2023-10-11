@@ -1,7 +1,7 @@
 # AppInstaClone
 
 ## Objectives
-- **Application Architecture:** Implement a clean, maintainable MVVM pattern.
+- **Application only with MVVM pattern:** Done.
 - **Apply Clean Architecture:** Pending.
 
 ## Description
@@ -31,14 +31,21 @@ This project serves as a valuable learning experience for developers looking to 
 - **User Profile:** Lets users edit their name, username, and profile picture, and upload new posts.
 
 ## Screenshots
-![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(7).jpg)
-![Register](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(6).jpg)
+| Login                 | Register                |
+| --------------------- | ----------------------- |
+| ![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(7).jpg) | ![Register](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(6).jpg) |
 
-![Search](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(5).jpg)
-![Post](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(4).jpg)
 
-![Feed](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(3).jpg)
-![Edit](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(2).jpg)
+| Search                | Post                    |
+| --------------------- | ----------------------- |
+| ![Search](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(5).jpg) | ![Post](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(4).jpg) |
 
-![Profile](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(1).jpg)
-![Comments](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(8).jpg)
+
+| Feed                  | Edit                    |
+| --------------------- | ----------------------- |
+| ![Feed](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(3).jpg) | ![Edit](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(2).jpg) |
+
+
+| Profile               | Comments                |
+| --------------------- | ----------------------- |
+| ![Profile](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(1).jpg) | ![Comments](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(8).jpg) | 
