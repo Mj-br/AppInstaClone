@@ -32,16 +32,10 @@ This project serves as a valuable learning experience for developers looking to 
 
 <h2>Screenshots</h2>
 
-<div style="display: flex; flex-direction: row; align-items: center;">
-  <div style="flex: 1; text-align: center;">
-    <h3>Login</h3>
-    <img src="https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(7).jpg" alt="Login" width="400" height="auto">
-  </div>
-  <div style="flex: 1; text-align: center;">
-    <h3>Register</h3>
-    <img src="https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(6).jpg" alt="Register" width="400" height="auto">
-  </div>
-</div>
+| Login                | Register                |
+| --------------------- | ----------------------- |
+| ![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(7).jpg) | ![Register](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(6).jpg) |
+
 
 
 <h2>Video Demo</h2>
