@@ -1,6 +1,3 @@
-# AppInstaClone
- An app similar to Instagram for practicing.
-
 <h1>AppInstaClone</h1>
 
 <h2>Description</h2>
