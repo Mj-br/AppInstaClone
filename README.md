@@ -1,5 +1,11 @@
 <h1>AppInstaClone</h1>
 
+<h2>Objectives</h2>
+<ul>
+  <li><strong>Application only with MVVM pattern:</strong>Done</li>
+  <li><strong>Apply Clean Architecture:>/strong>Pending</li>
+</ul>
+
 <h2>Description</h2>
 <p>This educational and personal practice project mirrors some of Instagram's features, providing an opportunity to learn and apply best software development practices. It's important to note that not all companies follow these principles, and many legacy codebases may require technical upgrades to align with modern development standards.
 
