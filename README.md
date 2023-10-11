@@ -57,5 +57,5 @@ This project serves as a valuable learning experience for developers looking to 
 
 | Profile                | Comments                |
 | --------------------- | ----------------------- |
-| ![Profile](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(1).jpg) | ![Comments](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(8).jpg) | 
+| ![Profile](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(1).jpg) |![Comments](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(8).jpg) | 
 
