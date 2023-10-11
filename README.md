@@ -49,7 +49,7 @@ This project serves as a valuable learning experience for developers looking to 
 
 | Login                | Register                |
 | --------------------- | ----------------------- |
-| ![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(1).jpg) | 
+| ![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(1).jpg) | ![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(8).jpg) | 
 
 
 
