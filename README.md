@@ -32,8 +32,14 @@ This project serves as a valuable learning experience for developers looking to 
 
 <h2>Screenshots</h2>
 
+<img src="photo%20(7).jpg" alt="Image Alt Text" width="360" height="640">
+
 <h2>Video Demo</h2>
-https://vimeo.com/873417599?share=copy
+<video width="640" height="360" controls>
+  <source src="relative-path-to-your-video.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
 
 <h2>Key Features</h2>
 <ul>
