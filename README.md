@@ -32,7 +32,7 @@ This project serves as a valuable learning experience for developers looking to 
 <h2>Screenshots</h2>
 
 <h2>Video Demo</h2>
-**[Watch Video on Vimeo](https://vimeo.com/873417599)**
+https://vimeo.com/873417599?share=copy
 
 <h2>Key Features</h2>
 <ul>
