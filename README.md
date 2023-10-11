@@ -2,8 +2,8 @@
 
 <h2>Objectives</h2>
 <ul>
-  <li><strong>Application only with MVVM pattern:</strong>Done</li>
-  <li><strong>Apply Clean Architecture:>/strong>Pending</li>
+  <li><strong>Application only with MVVM pattern:</strong> Done </li>
+  <li><strong>Apply Clean Architecture:</strong> Pending </li>
 </ul>
 
 <h2>Description</h2>
