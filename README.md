@@ -30,6 +30,18 @@ This project serves as a valuable learning experience for developers looking to 
   <li><strong>Coroutines:</strong> Used for handling asynchronous operations more easily.</li>
 </ul>
 
+
+<h2>Video Demo</h2>
+
+
+<h2>Key Features</h2>
+<ul>
+  <li><strong>Login and Registration:</strong> Allows users to create accounts and log in.</li>
+  <li><strong>Feed of Posts:</strong> Enables users to view posts from others.</li>
+  <li><strong>Search:</strong> Provides keyword-based post search.</li>
+  <li><strong>User Profile:</strong> Lets users edit their name, username, and profile picture, and upload new posts.</li>
+</ul>
+
 <h2>Screenshots</h2>
 
 | Login                | Register                |
@@ -50,21 +62,4 @@ This project serves as a valuable learning experience for developers looking to 
 | Login                | Register                |
 | --------------------- | ----------------------- |
 | ![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(1).jpg) | ![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(8).jpg) | 
-
-
-
-<h2>Video Demo</h2>
-<video width="640" height="360" controls>
-  <source src="relative-path-to-your-video.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-
-
-<h2>Key Features</h2>
-<ul>
-  <li><strong>Login and Registration:</strong> Allows users to create accounts and log in.</li>
-  <li><strong>Feed of Posts:</strong> Enables users to view posts from others.</li>
-  <li><strong>Search:</strong> Provides keyword-based post search.</li>
-  <li><strong>User Profile:</strong> Lets users edit their name, username, and profile picture, and upload new posts.</li>
-</ul>
 
