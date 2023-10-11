@@ -32,7 +32,8 @@ This project serves as a valuable learning experience for developers looking to 
 <h2>Screenshots</h2>
 
 <h2>Video Demo</h2>
-<iframe width="600" height="450" src="https://drive.google.com/file/d/1YdIfHID6-lMj4Nxz8nVJnb4mjAvJFnhi/preview" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+<iframe src="https://player.vimeo.com/video/873417599" width="640" height="360" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+
 
 <h2>Key Features</h2>
 <ul>
