@@ -33,9 +33,11 @@ This project serves as a valuable learning experience for developers looking to 
 <h2>Screenshots</h2>
 
 <h3>Login</h3>
+
 ![Login](./media/photo%20(7).jpg)
 
 <h3>Register</h3>
+
 ![Register](./media/photo%20(6).jpg)
 
 
