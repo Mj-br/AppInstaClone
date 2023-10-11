@@ -34,7 +34,7 @@ This project serves as a valuable learning experience for developers looking to 
 
 <h3>Login</h3>
 
-![Login](https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(7).jpg)
+<img src="https://raw.githubusercontent.com/Mj-br/AppInstaClone/main/media/Photo%20(7).jpg" alt="Login" width="400" height="auto">
 
 <h3>Register</h3>
 
